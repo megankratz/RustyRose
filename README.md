@@ -6,3 +6,15 @@ The goal will be to provide full coverage, rigorous testing, and experimental be
 # RESOURCES 
 
 * librosa audio and music processing in Python [https://librosa.org/]
+
+# TIMELINE
+
+# TOOLS
+
+# DATASETS
+
+# ASSOCIATED LITERATURE
+
+# RELATED WORK
+
+# OBJECTIVES
