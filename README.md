@@ -10,6 +10,7 @@ The goal will be to provide full coverage, rigorous testing, and experimental be
 # TIMELINE
 
 # TOOLS
+This project primarily uses the Rust language and its dependency manager Cargo.We may utilze existing Python tools from the librosa ecosystem where appropriate.
 
 # DATASETS
 
