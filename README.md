@@ -99,7 +99,7 @@ AND AUDIO PROCESSING COMPONENTS FOR PYTORCH](https://arxiv.org/pdf/2310.17864)
 * PI4 (expected)
 * PI5 (advanced)
 
-# Firstname Last 
+# Megan Kratz
 * PI1 (basic)
 * PI2 (basic)
 * PI3 (expected)
