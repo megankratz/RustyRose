@@ -42,16 +42,21 @@ This project primarily uses the Rust language and its dependency manager Cargo. 
 
 ### DATASETS
 
-*This project will use ___ including*
-* *something here*
-* *something here*
+* [GTZAN Genre Collection](https://www.kaggle.com/datasets/carlthome/gtzan-genre-collection)
+* [LibriSpeech ASR Corpus](https://www.openslr.org/12)
+* [MedleyDB](https://medleydb.weebly.com/)
 
 ### ASSOCIATED LITERATURE
 * *see bibliography for now ?*
 
 ### RELATED WORK
-This project has librosa as the primary reference for implimentation of this project. Librosa is a widely adopted Python based MIR toolkit. *Other related systems include _____*
-
+This project has librosa as the primary reference for implimentation of this project. Librosa is a widely adopted Python based MIR toolkit. Other related systems are listed here:
+* [Essentia](https://essentia.upf.edu/): An open-source C++ library for audio analysis and hardware-optimized Music Information Retrieval (MIR).
+* [Aubio](https://aubio.org/): A C library focused on real-time audio labeling, including pitch estimation and beat tracking.
+* [AudioFlux](https://github.com/libAudioFlux/audioFlux): A high-performance C++/Python library designed for deep learning-based audio feature extraction.
+* [Rodio](https://github.com/RustAudio/rodio): The standard Rust audio playback library, utilizing a `Source` trait for audio streaming.
+* [Hound](https://github.com/ruuda/hound): A lightweight, encoding/decoding library for WAV files in pure Rust.
+  
 RustyRose will differ from these projects by focusing on:
 * Rust as the implementation language
 * Explicit correctness testing
@@ -79,7 +84,7 @@ Performance](https://trepo.tuni.fi/bitstream/handle/10024/217564/transpiling_pyt
 # Holly Gummerson
 * objective (level)
 
-# Firstname Last 
+# Jonathan Ami 
 * objective (level)
 
 # Firstname Last 
