@@ -6,9 +6,9 @@ The goal will be to provide full coverage, rigorous testing, and experimental be
 
 ### TIMELINE
 
-***Note**: This is a preliminary design specification to be filled out further when specific tasks and direction are assigned to the group. We are awaiting further insturctions as to how this project will be implimented and what will be expected of the members*
+***Note**: This is a preliminary design specification to be filled out further when specific tasks and direction are assigned to the group. We are awaiting further instructions as to how this project will be implemented and what will be expected of the members*
 
-|Project Setup |Feburary 10, 2026
+|Project Setup |February  10, 2026
 |---|---|
 |Set up repository and project structure| All Team
 | Write Design Specification | All Team
@@ -30,7 +30,7 @@ The goal will be to provide full coverage, rigorous testing, and experimental be
 
 
 ### TOOLS
-This project primarily uses the Rust language and its dependency manager Cargo. We may utilze existing Python tools from the librosa ecosystem where appropriate.
+This project primarily uses the Rust language and its dependency manager Cargo. We may utilize existing Python tools from the librosa ecosystem where appropriate.
 
 * Other Related Tools: mir_eval, jams, MIREX
 
@@ -47,7 +47,7 @@ Supporting documents, manuals and resources:
 * [The Rust Programming Language](https://doc.rust-lang.org/stable/book/title-page.html)
 
 ### RELATED WORK
-This project has librosa as the primary reference for implimentation of this project. Librosa is a widely adopted Python based MIR toolkit. Other related systems are listed here:
+This project has librosa as the primary reference for implementation of this project. Librosa is a widely adopted Python based MIR toolkit. Other related systems are listed here:
 * [Essentia](https://essentia.upf.edu/): An open-source C++ library for audio analysis and hardware-optimized Music Information Retrieval (MIR).
 * [Aubio](https://aubio.org/): A C library focused on real-time audio labeling, including pitch estimation and beat tracking.
 * [AudioFlux](https://github.com/libAudioFlux/audioFlux): A high-performance C++/Python library designed for deep learning-based audio feature extraction.
@@ -58,7 +58,7 @@ RustyRose will differ from these projects by focusing on:
 * Rust as the implementation language
 * Explicit correctness testing
 * Comparative benchmarking against Python tools 
-* Understanding MIR pipelines ar the system level 
+* Understanding MIR pipelines at the system level 
 
 ### BIBLIOGRAPHY
 
@@ -100,7 +100,7 @@ RustyRose will differ from these projects by focusing on:
 * PI4 (expected)
 * PI5 (advanced)
 
-# Firstname Last 
+# Alexander Williams 
 * PI1 (basic)
 * PI2 (basic)
 * PI3 (expected)
