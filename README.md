@@ -90,6 +90,10 @@ RustyRose will differ from these projects by focusing on:
 
 [14] ewan-xu, "GitHub - ewan-xu/Librosacpp: Librosahttps://github.com/ewan-xu/LibrosaCpp: LibrosaCpp" Accessed: Feb. 10, 2026. [Online] Available https://github.com/ewan-xu/LibrosaCpp (accessed Feb. 10, 2026).
 
+[15]  M. Minin, “Enhancing Python Performance With Rust Integration,” 2025 International Conference on Industrial Engineering, Applications and Manufacturing (ICIEAM), pp. 879–883, May 2025, doi: https://doi.org/10.1109/icieam65163.2025.11028364.
+
+[16] P. Mroczek, J. Mańturz, and M. Miłosz, “Comparative analysis of Python and Rust: evaluating their combined impact on performance,” Journal of Computer Sciences Institute, vol. 35, pp. 137–141, Jun. 2025, doi: https://doi.org/10.35784/jcsi.7050.
+ 
 # Holly Gummerson
 * PI1 (basic)
 * PI2 (basic)
