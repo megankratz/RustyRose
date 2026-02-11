@@ -62,8 +62,8 @@ RustyRose will differ from these projects by focusing on:
 
 ### BIBLIOGRAPHY
 
-[1] “librosa — librosa 0.8.0 documentation,” librosa.org. https://librosa.org/doc/latest/index.html
-‌
+[1] “librosa — librosa 0.8.0 documentation,” librosa.org. https://librosa.org/doc/latest/index.html‌
+
 [2] C. Raffel et al., “mir_eval: A TRANSPARENT IMPLEMENTATION OF COMMON MIR METRICS.” Accessed: Feb. 07, 2024. [Online]. Available: https://colinraffel.com/publications/ismir2014mir_eval.pdf
 
 [3] "mir_eval Documentation," Readthedocs.io, 2026. https://mir-eval.readthedocs.io/latest/index.html/latest/index.html (accesed Feb. 10, 2026
@@ -82,7 +82,11 @@ RustyRose will differ from these projects by focusing on:
 
 [10] Xiao Hu et al., "The MIREX Grand Challenge: A Framework of Holistic User Experience Evaluation in Music Information Retrieval." Accessed: Feb. 10, 2026. [Online]. Available: https://researchcommons.waikato.ac.nz/server/api/core/bitstreams/70c370c7-88a8-45b1-8e15-5142aca05b80/content
 
+[11] George Tzanetakis, 2001, "GTZAN Genre Collection" [Online]. Available: https://www.kaggle.com/datasets/carlthome/gtzan-genre-collection/data
 
+[12] Vassil Panayotov, 2016, "LibriSpeech ASR Corpus". OpenSLR. [Online]. Available: https://www.openslr.org/12
+
+[13] R. Bittner, J. Salamon, M. Tierney, M. Mauch, C. Cannam and J. P. Bello, "MedleyDB: A Multitrack Dataset for Annotation-Intensive MIR Research", in 15th International Society for Music Information Retrieval Conference, Taipei, Taiwan, Oct. 2014.
 
 
 # Holly Gummerson
