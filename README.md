@@ -88,6 +88,7 @@ RustyRose will differ from these projects by focusing on:
 
 [13] R. Bittner, J. Salamon, M. Tierney, M. Mauch, C. Cannam and J. P. Bello, "MedleyDB: A Multitrack Dataset for Annotation-Intensive MIR Research", in 15th International Society for Music Information Retrieval Conference, Taipei, Taiwan, Oct. 2014.
 
+[14] ewan-xu, "GitHub - ewan-xu/Librosacpp: Librosahttps://github.com/ewan-xu/LibrosaCpp: LibrosaCpp" Accessed: Feb. 10, 2026. [Online] Available https://github.com/ewan-xu/LibrosaCpp (accessed Feb. 10, 2026).
 
 # Holly Gummerson
 * PI1 (basic)
