@@ -66,17 +66,23 @@ RustyRose will differ from these projects by focusing on:
 ‌
 [2] C. Raffel et al., “mir_eval: A TRANSPARENT IMPLEMENTATION OF COMMON MIR METRICS.” Accessed: Feb. 07, 2024. [Online]. Available: https://colinraffel.com/publications/ismir2014mir_eval.pdf
 
-[3] “JAMS — jams 0.3.5 documentation,” Readthedocs.io, 2026. https://jams.readthedocs.io/en/stable/ (accessed Feb. 10, 2026).
+[3] "mir_eval Documentation," Readthedocs.io, 2026. https://mir-eval.readthedocs.io/latest/index.html/latest/index.html (accesed Feb. 10, 2026
 
-[4] D. Bogdanov et al., “Essentia: An audio analysis library for music information retrieval,” in Proceedings of the 14th International Society for Music Information Retrieval Conference (ISMIR), Curitiba, Brazil, 2013, pp. 493–498.
+[4] “JAMS — jams 0.3.5 documentation,” Readthedocs.io, 2026. https://jams.readthedocs.io/en/stable/ (accessed Feb. 10, 2026).
 
-[5] “Criterion.rs - Criterion.rs Documentation,” Github.io, 2025. https://bheisler.github.io/criterion.rs/book/criterion_rs.html
+[5] D. Bogdanov et al., “Essentia: An audio analysis library for music information retrieval,” in Proceedings of the 14th International Society for Music Information Retrieval Conference (ISMIR), Curitiba, Brazil, 2013, pp. 493–498.
+
+[6] “Criterion.rs - Criterion.rs Documentation,” Github.io, 2025. https://bheisler.github.io/criterion.rs/book/criterion_rs.html
 ‌
-[6] H. Lunnikivi, “Transpiling Python to Rust for Optimized Performance.” Accessed: Feb. 10, 2026. [Online]. Available: https://trepo.tuni.fi/bitstream/handle/10024/217564/transpiling_python_to_rust_for_optimized_performance.pdf?sequence=1
+[7] H. Lunnikivi, “Transpiling Python to Rust for Optimized Performance.” Accessed: Feb. 10, 2026. [Online]. Available: https://trepo.tuni.fi/bitstream/handle/10024/217564/transpiling_python_to_rust_for_optimized_performance.pdf?sequence=1
 
-[7] py2many, “GitHub - py2many/py2many: Transpiler of Python to many other languages,” GitHub, 2025. https://github.com/py2many/py2many (accessed Feb. 10, 2026).
+[8] py2many, “GitHub - py2many/py2many: Transpiler of Python to many other languages,” GitHub, 2025. https://github.com/py2many/py2many (accessed Feb. 10, 2026).
 ‌
-[8] konchunas, “GitHub - konchunas/pyrs: Python to Rust transpiler,” GitHub, 2025. https://github.com/konchunas/pyrs (accessed Feb. 10, 2026).
+[9] konchunas, “GitHub - konchunas/pyrs: Python to Rust transpiler,” GitHub, 2025. https://github.com/konchunas/pyrs (accessed Feb. 10, 2026).
+
+[10] Xiao Hu et al., "The MIREX Grand Challenge: A Framework of Holistic User Experience Evaluation in Music Information Retrieval." Accessed: Feb. 10, 2026. [Online]. Available: https://researchcommons.waikato.ac.nz/server/api/core/bitstreams/70c370c7-88a8-45b1-8e15-5142aca05b80/content
+
+
 
 
 # Holly Gummerson
