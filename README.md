@@ -74,10 +74,12 @@ RustyRose will differ from these projects by focusing on:
 
 [6] “Criterion.rs - Criterion.rs Documentation,” Github.io, 2025. https://bheisler.github.io/criterion.rs/book/criterion_rs.html
 ‌
+
 [7] H. Lunnikivi, “Transpiling Python to Rust for Optimized Performance.” Accessed: Feb. 10, 2026. [Online]. Available: https://trepo.tuni.fi/bitstream/handle/10024/217564/transpiling_python_to_rust_for_optimized_performance.pdf?sequence=1
 
 [8] py2many, “GitHub - py2many/py2many: Transpiler of Python to many other languages,” GitHub, 2025. https://github.com/py2many/py2many (accessed Feb. 10, 2026).
 ‌
+
 [9] konchunas, “GitHub - konchunas/pyrs: Python to Rust transpiler,” GitHub, 2025. https://github.com/konchunas/pyrs (accessed Feb. 10, 2026).
 
 [10] Xiao Hu et al., "The MIREX Grand Challenge: A Framework of Holistic User Experience Evaluation in Music Information Retrieval." Accessed: Feb. 10, 2026. [Online]. Available: https://researchcommons.waikato.ac.nz/server/api/core/bitstreams/70c370c7-88a8-45b1-8e15-5142aca05b80/content
