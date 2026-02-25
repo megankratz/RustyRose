@@ -97,17 +97,29 @@ RustyRose will differ from these projects by focusing on:
 [16] P. Mroczek, J. Mańturz, and M. Miłosz, “Comparative analysis of Python and Rust: evaluating their combined impact on performance,” Journal of Computer Sciences Institute, vol. 35, pp. 137–141, Jun. 2025, doi: https://doi.org/10.35784/jcsi.7050.
 
 
+TASKS 
+
 Core IO and DSP [https://librosa.org/doc/latest/core.html]
 
-(basic) Audio Loading,
-(basic) Signal Generattion 
-(expected) Time-Domain Processing 
-(expected) Magnitude-Scaling 
-(expected) Time-Domain Processing (auto-correlate, lpc) 
-(expected) Time-Domain Processing (zero-crossings, mu-compress, mu-expand) 
-(advanced) Spectral-Representations (fft, ifft, reassinged spectrum) 
-(advanced) Spectral-Representations (all cqts) 
-(advaned) Spectral-Representations (iir, fmt, magphase) 
+* (basic) Audio Loading,
+* (basic) Signal Generattion
+* (basic) Magnitude-scaling
+* (basic) Frequency Unit Conversion
+* (basic) Time Unit Converstion
+* (basic) Frequency range generation
+* (basic) Miscellaneous
+* (expected) Time-Domain Processing 
+* (expected) Magnitude-Scaling 
+* (expected) Time-Domain Processing (auto-correlate, lpc) 
+* (expected) Time-Domain Processing (zero-crossings, mu-compress, mu-expand)
+* (expected) Music Notation
+* (expected) Pitch and Tuning 
+* (advanced) Spectral-Representations (fft, ifft, reassinged spectrum) 
+* (advanced) Spectral-Representations (all cqts) 
+* (advanced) Spectral-Representations (iir, fmt, magphase)
+* (advanced) Phase-recovery
+
+
 
 
  
