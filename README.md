@@ -119,6 +119,46 @@ Core IO and DSP [https://librosa.org/doc/latest/core.html]
 * (advanced) Spectral-Representations (iir, fmt, magphase)
 * (advanced) Phase-recovery
 
+Feature extraction [https://librosa.org/doc/latest/feature.html]
+
+* (basic) Spectral Features: RMS, zerocrossings-rate, spectral centroid, rolloff, flatness, contrast, bandwidth
+* (basic) Feature Manipulation 
+* (expected) Spectral Features: Various chroma
+* (expected) Spectral Features: MFCCs, Mel-spectrogram
+* (expected) Spectral Features: Poly-features, and tonnetz
+* (expected) Feature Inverssion 
+* (advanced) Rhythm Features
+
+Onset detection [https://librosa.org/doc/latest/onset.html]
+* (basic) onset-detect
+* (expected) onset-strength, onset-backtrack, onset-strength-multi
+
+Beat track [https://librosa.org/doc/latest/beat.html]
+* (advanced) beat track
+* (advanced) plp
+
+Effects [https://librosa.org/doc/latest/effects.html]
+* (expected): Miscellaneous
+* (advanced): time stretch and pitch shift
+
+Temporal Segmentation [https://librosa.org/doc/latest/segment.html]
+* (expected) cross-similarity, recurrance-matrix, recurrence to lag, lag to recurrence
+* (advanced) time-lag filter, path-enhance
+* (advanced) temporal-clustering
+
+Sequential Modeling [https://librosa.org/doc/latest/sequence.html]
+* (expected) transition matrices
+* (advanced) viterbi stuff 
+* (advanced) dtw, rqa
+  
+
+Utilities [https://librosa.org/doc/latest/util.html] 
+* (expected) all functions
+
+
+
+
+
 
 
 
