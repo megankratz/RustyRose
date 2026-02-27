@@ -104,17 +104,17 @@ Core IO and DSP [https://librosa.org/doc/latest/core.html]
 * (basic) Audio Loading,
 * (basic) Signal Generattion
 * (basic) Magnitude-scaling
-* (basic) Frequency Unit Conversion
+* (basic) Frequency Unit Conversion - H
 * (basic) Time Unit Converstion
-* (basic) Frequency range generation
+* (basic) Frequency range generation - H
 * (basic) Miscellaneous
 * (expected) Time-Domain Processing 
 * (expected) Magnitude-Scaling 
-* (expected) Time-Domain Processing (auto-correlate, lpc) 
-* (expected) Time-Domain Processing (zero-crossings, mu-compress, mu-expand)
+* (expected) Time-Domain Processing (auto-correlate, lpc) - H
+* (expected) Time-Domain Processing (zero-crossings, mu-compress, mu-expand) - H
 * (expected) Music Notation
 * (expected) Pitch and Tuning 
-* (advanced) Spectral-Representations (fft, ifft, reassinged spectrum) 
+* (advanced) Spectral-Representations (fft, ifft, reassinged spectrum) - H
 * (advanced) Spectral-Representations (all cqts) 
 * (advanced) Spectral-Representations (iir, fmt, magphase)
 * (advanced) Phase-recovery
@@ -156,19 +156,13 @@ Utilities [https://librosa.org/doc/latest/util.html]
 * (expected) all functions
 
 
-
-
-
-
-
-
  
 # Holly Gummerson
-* PI1 (basic)
-* PI2 (basic)
-* PI3 (expected)
-* PI4 (expected)
-* PI5 (advanced)
+* PI1 (basic) Frequency Unit Conversion
+* PI2 (basic) Frequency range generation
+* PI3 (expected) Time-Domain Processing (auto-correlate, lpc) 
+* PI4 (expected) Time-Domain Processing (zero-crossings, mu-compress, mu-expand)
+* PI5 (advanced) Spectral-Representations (fft, ifft, reassinged spectrum) 
 
 # Jonathan Ami 
 * PI1 (basic)
