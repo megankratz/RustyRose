@@ -102,18 +102,18 @@ TASKS
 Core IO and DSP [https://librosa.org/doc/latest/core.html]
 
 * (basic) Audio Loading,
-* (basic) Signal Generattion
+* (basic) Signal Generattion - A
 * (basic) Magnitude-scaling
 * (basic) Frequency Unit Conversion - H
 * (basic) Time Unit Converstion
 * (basic) Frequency range generation - H
-* (basic) Miscellaneous
+* (basic) Miscellaneous - A
 * (expected) Time-Domain Processing 
 * (expected) Magnitude-Scaling 
 * (expected) Time-Domain Processing (auto-correlate, lpc) - H
 * (expected) Time-Domain Processing (zero-crossings, mu-compress, mu-expand) - H
 * (expected) Music Notation
-* (expected) Pitch and Tuning 
+* (expected) Pitch and Tuning - A
 * (advanced) Spectral-Representations (fft, ifft, reassinged spectrum) - H
 * (advanced) Spectral-Representations (all cqts) 
 * (advanced) Spectral-Representations (iir, fmt, magphase)
@@ -138,8 +138,8 @@ Beat track [https://librosa.org/doc/latest/beat.html]
 * (advanced) plp
 
 Effects [https://librosa.org/doc/latest/effects.html]
-* (expected): Miscellaneous
-* (advanced): time stretch and pitch shift
+* (expected): Miscellaneous - A
+* (advanced): time stretch and pitch shift - A
 
 Temporal Segmentation [https://librosa.org/doc/latest/segment.html]
 * (expected) cross-similarity, recurrance-matrix, recurrence to lag, lag to recurrence
@@ -179,8 +179,8 @@ Utilities [https://librosa.org/doc/latest/util.html]
 * PI5 (advanced)
 
 # Alexander Williams 
-* PI1 (basic)
-* PI2 (basic)
-* PI3 (expected)
-* PI4 (expected)
-* PI5 (advanced)
+* PI1 (Basic) Signal generation (Core IO and DSP)
+* PI2 (Basic) Miscellaneous (Core IO and DSP)
+* PI3 (Expected) Pitch and Tuning (Core IO and DSP)
+* PI4 (Expected) Miscellaneous effects (Effects)
+* PI5 (Advanced) Time stretch and pitch shift (Effects)
