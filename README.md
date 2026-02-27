@@ -14,13 +14,29 @@ The goal will be to provide full coverage, rigorous testing, and experimental be
 | Write Design Specification | All Team
 | Plan features and expectations | All Team
 
-|Next Tasks | Completion Date
+|Basic Tasks | Completion Date
 |---|---|
-| TBD | Names
-| TBD | Names
-| TBD | Names
+| Set up cargo structure | Names
+| Basic tasks (IO/DSP) | Names
+| Impliment Tests - Ensure usability | Names
 
-... 
+|Expected Tasks | Completion Date
+|---|---|
+| Expected Tasks | Names
+| Misc basic / helper functions | Names
+| Testing | Names
+
+|Advanced Tasks | Completion Date
+|---|---|
+| Advanced Tasks | Names
+| Collect Python Benchmarks | Names
+| Testing | Names
+
+|Analysis | Completion Date
+|---|---|
+|Any functionality| Names
+|Collect Data| Names
+|Perform analysis | Names
 
 |Documentation and Presentation| Completion Date
 |---|---|
