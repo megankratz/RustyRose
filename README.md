@@ -188,11 +188,11 @@ Utilities [https://librosa.org/doc/latest/util.html]
 * PI5 (advanced) Rhythm Features
 
 # Megan Kratz
-* PI1 (basic)
-* PI2 (basic)
-* PI3 (expected)
-* PI4 (expected)
-* PI5 (advanced)
+* PI1 (basic) Magnitude-scaling (power_to_db, amplitude_to_db)
+* PI2 (basic) Feature manipulation (delta features, stacking, normalization utilities)
+* PI3 (expected) MFCCs + Mel-spectrogram
+* PI4 (expected) Various chroma features (at least chroma_stft)
+* PI5 (advanced) Rhythm features (e.g., tempogram)
 
 # Alexander Williams 
 * PI1 (Basic) Signal generation (Core IO and DSP)
