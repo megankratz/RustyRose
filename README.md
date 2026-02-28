@@ -181,11 +181,11 @@ Utilities [https://librosa.org/doc/latest/util.html]
 * PI5 (advanced) Spectral-Representations (fft, ifft, reassinged spectrum) 
 
 # Jonathan Ami 
-* PI1 (basic)
-* PI2 (basic)
-* PI3 (expected)
-* PI4 (expected)
-* PI5 (advanced)
+* PI1 (basic) Audio Loading,
+* PI2 (basic) Signal Generattion - A
+* PI3 (expected) Music Notation
+* PI4 (expected) Pitch and Tuning - A
+* PI5 (advanced) Rhythm Features
 
 # Megan Kratz
 * PI1 (basic)
