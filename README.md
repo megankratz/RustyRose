@@ -117,18 +117,18 @@ TASKS
 
 Core IO and DSP [https://librosa.org/doc/latest/core.html]
 
-* (basic) Audio Loading,
-* (basic) Signal Generattion - A
-* (basic) Magnitude-scaling
+* (basic) Audio Loading, - J
+* (basic) Signal Generation - J
+* (basic) Magnitude-scaling - M
 * (basic) Frequency Unit Conversion - H
-* (basic) Time Unit Converstion
+* (basic) Time Unit Converstion - A
 * (basic) Frequency range generation - H
 * (basic) Miscellaneous - A
 * (expected) Time-Domain Processing 
 * (expected) Magnitude-Scaling 
 * (expected) Time-Domain Processing (auto-correlate, lpc) - H
 * (expected) Time-Domain Processing (zero-crossings, mu-compress, mu-expand) - H
-* (expected) Music Notation
+* (expected) Music Notation - J
 * (expected) Pitch and Tuning - A
 * (advanced) Spectral-Representations (fft, ifft, reassinged spectrum) - H
 * (advanced) Spectral-Representations (all cqts) 
@@ -138,9 +138,9 @@ Core IO and DSP [https://librosa.org/doc/latest/core.html]
 Feature extraction [https://librosa.org/doc/latest/feature.html]
 
 * (basic) Spectral Features: RMS, zerocrossings-rate, spectral centroid, rolloff, flatness, contrast, bandwidth
-* (basic) Feature Manipulation 
-* (expected) Spectral Features: Various chroma
-* (expected) Spectral Features: MFCCs, Mel-spectrogram
+* (basic) Feature Manipulation - M
+* (expected) Spectral Features: Various chroma - M
+* (expected) Spectral Features: MFCCs, Mel-spectrogram - M
 * (expected) Spectral Features: Poly-features, and tonnetz
 * (expected) Feature Inverssion 
 * (advanced) Rhythm Features
@@ -182,7 +182,7 @@ Utilities [https://librosa.org/doc/latest/util.html]
 
 # Jonathan Ami 
 * PI1 (basic) Audio Loading,
-* PI2 (basic) Signal Generattion - A
+* PI2 (basic) Signal Generation
 * PI3 (expected) Music Notation
 * PI4 (expected) Pitch and Tuning - A
 * PI5 (advanced) Rhythm Features
@@ -195,7 +195,7 @@ Utilities [https://librosa.org/doc/latest/util.html]
 * PI5 (advanced) Rhythm features (e.g., tempogram)
 
 # Alexander Williams 
-* PI1 (Basic) Signal generation (Core IO and DSP)
+* PI1 (Basic) Time Unit Converstion (Core IO and DSP)
 * PI2 (Basic) Miscellaneous (Core IO and DSP)
 * PI3 (Expected) Pitch and Tuning (Core IO and DSP)
 * PI4 (Expected) Miscellaneous effects (Effects)
