@@ -192,7 +192,7 @@ Utilities [https://librosa.org/doc/latest/util.html]
 * PI2 (basic) Feature manipulation (delta features, stacking, normalization utilities)
 * PI3 (expected) MFCCs + Mel-spectrogram
 * PI4 (expected) Various chroma features (at least chroma_stft)
-* PI5 (advanced) Rhythm features (e.g., tempogram)
+* PI5 (advanced) plp
 
 # Alexander Williams 
 * PI1 (Basic) Time Unit Converstion (Core IO and DSP)
