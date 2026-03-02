@@ -125,7 +125,7 @@ Core IO and DSP [https://librosa.org/doc/latest/core.html]
 * (basic) Frequency range generation - H
 * (basic) Miscellaneous - A
 * (expected) Time-Domain Processing 
-* (expected) Magnitude-Scaling 
+* (expected) Magnitude-Scaling
 * (expected) Time-Domain Processing (auto-correlate, lpc) - H
 * (expected) Time-Domain Processing (zero-crossings, mu-compress, mu-expand) - H
 * (expected) Music Notation - J
@@ -141,9 +141,9 @@ Feature extraction [https://librosa.org/doc/latest/feature.html]
 * (basic) Feature Manipulation - M
 * (expected) Spectral Features: Various chroma - M
 * (expected) Spectral Features: MFCCs, Mel-spectrogram - M
-* (expected) Spectral Features: Poly-features, and tonnetz
+* (expected) Spectral Features: Poly-features, and tonnetz - J
 * (expected) Feature Inverssion 
-* (advanced) Rhythm Features
+* (advanced) Rhythm Features - J
 
 Onset detection [https://librosa.org/doc/latest/onset.html]
 * (basic) onset-detect
@@ -184,7 +184,7 @@ Utilities [https://librosa.org/doc/latest/util.html]
 * PI1 (basic) Audio Loading,
 * PI2 (basic) Signal Generation
 * PI3 (expected) Music Notation
-* PI4 (expected) Pitch and Tuning - A
+* PI4 (expected) Spectral Features: Poly-features, and tonnetz
 * PI5 (advanced) Rhythm Features
 
 # Megan Kratz
