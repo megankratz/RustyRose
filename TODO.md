@@ -13,9 +13,8 @@
 
 - keep each task in its own file
 - expose modules through `mod.rs`
-- re-export stable public functions through `lib.rs` ?
 
-### How to Run
+### Helpful Commands
 
 1. Build
 ```bash
@@ -29,11 +28,6 @@ cargo test
 ```bash
 cargo fmt
 ```
-4. Run clippy
-```bash
-cargo clippy
-```
-
 Example:
 ```bash
 cargo run --example first_ex
@@ -41,15 +35,31 @@ cargo run --example first_ex
 
 ### Workflow 
 
-1. Add module file
-2. register with mod.rs
-3. export public functions in lib.rs if needed?
-4. add tests
+1. Add module file to the correct folder (ex. core_io) with librosa_module_name.rs
+2. register in mod.rs
+```bash
+pub mod new_module_name;
+pub use new_module_name::*;
+```
+4. Write functions based off librosa documentation
+5. Write basic tests in the module file
+```bash
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // function test
+    #[test]
+    fn testing_example() {
+        assert ...
+    }
+    ...
+}
+```
 5. run:
 ```bash
-cargo fmt
-cargo clippy
-cargo test
+cargo build
+cargo test module_file
 ```
 ---
 
@@ -58,10 +68,10 @@ cargo test
 - [ ] Finalize base folder structure
 - [ ] Ensure project builds correctly with 'cargo build' ...
 - [ ] Decide on any naming conventions etc
-- [ ] add starter tests for existing modules
+- [x] add starter tests for existing modules
 #### Holly 
-- [ ] Frequency Unit Conversion
-- [ ] Frequency range generation
+- [x] Frequency Unit Conversion
+- [x] Frequency range generation
 #### Megan 
 - [ ] Magnitude-scaling (power_to_db, amplitude_to_db)
 - [ ] Feature manipulation (delta features, stacking, normalization utilities)
