@@ -5,3 +5,7 @@ edition = "2024"
 
 [dependencies]
 regex = "1"
+hound = "3"
+
+[dev-dependencies]
+tempfile = "3"

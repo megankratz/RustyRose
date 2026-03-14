@@ -1,5 +1,6 @@
+use rusty_rose::core_io::fft_frequencies;
+
 fn main() {
-    let l : u64 = 2;
-    let r : u64 = 6;
-    println!("{} + {} = {}", l, r, RustyRose::core_io::example_func(l,r));
+    let freqs = fft_frequencies(22050.0, 2048);
+    println!("FFT bin 0: {} Hz, bin 1: {} Hz", freqs[0], freqs[1]);
 }
