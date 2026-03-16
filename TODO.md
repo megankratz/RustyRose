@@ -99,8 +99,8 @@ cargo test module_file
 - [ ] Music Notation
 - [ ] Spectral Features: Poly-features, and tonnetz
 #### Alex
-- [ ] Pitch and Tuning (Core IO and DSP)
-- [ ] Miscellaneous effects (Effects)
+- [x] Pitch and Tuning (Core IO and DSP)
+- [x] Miscellaneous effects (Effects)
 
 ---
 
