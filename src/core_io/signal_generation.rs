@@ -41,11 +41,7 @@ pub fn tone(
         Some(l) => l,
         None => match duration {
             Some(d) => (d * sr as f64).round() as usize,
-            None => {
-                return Err(
-                    "either \"length\" or \"duration\" must be provided".to_string()
-                )
-            }
+            None => return Err("either \"length\" or \"duration\" must be provided".to_string()),
         },
     };
 
@@ -103,11 +99,7 @@ pub fn chirp(
         Some(l) => (l, l as f64 / sr as f64),
         None => match duration {
             Some(d) => ((d * sr as f64).round() as usize, d),
-            None => {
-                return Err(
-                    "either \"length\" or \"duration\" must be provided".to_string()
-                )
-            }
+            None => return Err("either \"length\" or \"duration\" must be provided".to_string()),
         },
     };
 
@@ -196,12 +188,13 @@ pub fn clicks(
     length: Option<usize>,
 ) -> Result<Vec<f64>, String> {
     if times.is_none() && frames.is_none() {
-        return Err(
-            "at least one of \"times\" or \"frames\" must be provided".to_string()
-        );
+        return Err("at least one of \"times\" or \"frames\" must be provided".to_string());
     }
     if click_freq <= 0.0 {
-        return Err(format!("\"click_freq\" must be positive, got {}", click_freq));
+        return Err(format!(
+            "\"click_freq\" must be positive, got {}",
+            click_freq
+        ));
     }
     if click_duration <= 0.0 {
         return Err(format!(
@@ -447,7 +440,11 @@ mod tests {
         assert_eq!(y.len(), 22051);
         // Peak near sample 0
         let peak0 = y[0..10].iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-        assert!(peak0 > 0.01, "expected a click near sample 0, max={}", peak0);
+        assert!(
+            peak0 > 0.01,
+            "expected a click near sample 0, max={}",
+            peak0
+        );
     }
 
     #[test]
@@ -458,7 +455,10 @@ mod tests {
         assert_eq!(y.len(), 22050);
         // Click at frame 10 starts at sample 5120
         let start = 10 * hop;
-        let peak = y[start..start + 50].iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let peak = y[start..start + 50]
+            .iter()
+            .cloned()
+            .fold(f64::NEG_INFINITY, f64::max);
         assert!(peak > 0.01, "expected click near sample {}", start);
     }
 
@@ -482,7 +482,15 @@ mod tests {
         // Providing both should work and union the positions
         let times = [0.0f64];
         let frames = [10usize];
-        let y = clicks(Some(&times), Some(&frames), 22050, 512, 1000.0, 0.01, Some(22050));
+        let y = clicks(
+            Some(&times),
+            Some(&frames),
+            22050,
+            512,
+            1000.0,
+            0.01,
+            Some(22050),
+        );
         assert!(y.is_ok());
     }
 

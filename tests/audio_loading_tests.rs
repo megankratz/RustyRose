@@ -155,7 +155,11 @@ fn integration_load_stereo_raw() {
     let tmp = make_wav(&samples, 2, 22050);
     let (y, sr) = load(tmp.path().to_str().unwrap(), None, false, 0.0, None).unwrap();
     assert_eq!(sr, 22050);
-    assert_eq!(y.len(), 100, "expected 100 interleaved samples (50 frames × 2 ch)");
+    assert_eq!(
+        y.len(),
+        100,
+        "expected 100 interleaved samples (50 frames × 2 ch)"
+    );
 }
 
 #[test]

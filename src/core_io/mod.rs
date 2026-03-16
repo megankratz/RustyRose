@@ -12,3 +12,6 @@ pub use audio_loading::*;
 
 pub mod signal_generation;
 pub use signal_generation::*;
+
+pub mod miscellaneous;
+pub use miscellaneous::*;

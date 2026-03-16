@@ -42,7 +42,9 @@ fn integration_tone_exact_values_default_phi() {
         assert!(
             (v - expected).abs() < 1e-12,
             "sample {}: got {:.6}, expected {:.6}",
-            i, v, expected
+            i,
+            v,
+            expected
         );
     }
 }
@@ -58,7 +60,9 @@ fn integration_tone_exact_values_custom_phi() {
         assert!(
             (v - expected).abs() < 1e-12,
             "sample {}: got {:.6}, expected {:.6}",
-            i, v, expected
+            i,
+            v,
+            expected
         );
     }
 }
@@ -149,7 +153,9 @@ fn integration_chirp_linear_exact_values() {
         assert!(
             (y[i] - expected).abs() < 1e-12,
             "linear chirp[{}]: got {:.6}, expected {:.6}",
-            i, y[i], expected
+            i,
+            y[i],
+            expected
         );
     }
 }
@@ -172,7 +178,9 @@ fn integration_chirp_log_exact_values() {
         assert!(
             (y[i] - expected).abs() < 1e-12,
             "log chirp[{}]: got {:.6}, expected {:.6}",
-            i, y[i], expected
+            i,
+            y[i],
+            expected
         );
     }
 }
@@ -181,7 +189,11 @@ fn integration_chirp_log_exact_values() {
 fn integration_chirp_amplitude_bounded() {
     let y = chirp(110.0, 880.0, 22050, Some(22050), None, true, None).unwrap();
     for &v in &y {
-        assert!(v.abs() <= 1.0 + 1e-12, "chirp amplitude out of [-1,1]: {}", v);
+        assert!(
+            v.abs() <= 1.0 + 1e-12,
+            "chirp amplitude out of [-1,1]: {}",
+            v
+        );
     }
 }
 
@@ -287,12 +299,23 @@ fn integration_clicks_both_times_and_frames() {
     // Providing both should union positions
     let times = [0.0f64];
     let frames = [20usize];
-    let r = clicks(Some(&times), Some(&frames), 22050, 512, 1000.0, 0.01, Some(22050));
+    let r = clicks(
+        Some(&times),
+        Some(&frames),
+        22050,
+        512,
+        1000.0,
+        0.01,
+        Some(22050),
+    );
     assert!(r.is_ok());
     let y = r.unwrap();
     // click at sample 0 and at sample 20*512=10240
     let peak0 = y[0..50].iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-    let peak1 = y[10240..10290].iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    let peak1 = y[10240..10290]
+        .iter()
+        .cloned()
+        .fold(f64::NEG_INFINITY, f64::max);
     assert!(peak0 > 0.01, "expected click at sample 0");
     assert!(peak1 > 0.01, "expected click at sample 10240");
 }

@@ -59,8 +59,8 @@ pub fn get_duration(n_samples: usize, sr: u32) -> f64 {
 // We read the WAV header via `hound` and return spec.sample_rate.
 /// Get the sampling rate of a WAV file without loading its audio data.
 pub fn get_samplerate(path: &str) -> Result<u32, String> {
-    let reader = hound::WavReader::open(path)
-        .map_err(|e| format!("Failed to open '{}': {}", path, e))?;
+    let reader =
+        hound::WavReader::open(path).map_err(|e| format!("Failed to open '{}': {}", path, e))?;
     Ok(reader.spec().sample_rate)
 }
 
@@ -139,7 +139,10 @@ pub fn load(
             let max_val = (1_i64 << (bits_per_sample - 1)) as f32;
             reader
                 .samples::<i32>()
-                .map(|s| s.map(|v| v as f32 / max_val).map_err(|e| format!("Read error: {}", e)))
+                .map(|s| {
+                    s.map(|v| v as f32 / max_val)
+                        .map_err(|e| format!("Read error: {}", e))
+                })
                 .collect::<Result<Vec<f32>, String>>()?
         }
     };
@@ -174,13 +177,8 @@ pub fn load(
 mod tests {
     use super::*;
 
-
     /// Helper: write a minimal WAV file to a temp file and return its path.
-    fn write_test_wav(
-        samples: &[i16],
-        channels: u16,
-        sample_rate: u32,
-    ) -> tempfile::NamedTempFile {
+    fn write_test_wav(samples: &[i16], channels: u16, sample_rate: u32) -> tempfile::NamedTempFile {
         use hound::{SampleFormat, WavSpec, WavWriter};
         let tmp = tempfile::NamedTempFile::new().expect("failed to create temp file");
         let spec = WavSpec {

@@ -2,7 +2,7 @@
 use regex::Regex;
 //use std::{collections::HashMap, string};
 
-// note_to_hz 
+// note_to_hz
 pub fn note_to_hz(note: &str) -> f32 {
     return midi_to_hz(note_to_midi(note, true).unwrap());
 }
@@ -10,7 +10,7 @@ pub fn note_to_hz(note: &str) -> f32 {
 // note_to_midi and midi_to_hz are SKETCHY fyi
 // note_to_midi
 // [docs]def note_to_midi(
-//     
+//
 //     if not isinstance(note, str):
 //         return np.array([note_to_midi(n, round_midi=round_midi) for n in note])
 //     pitch_map: Dict[str, int] = {
@@ -99,25 +99,30 @@ pub fn note_to_midi(note: &str, round_midi: bool) -> Result<f32, String> {
         .unwrap()
         .to_ascii_uppercase();
 
-    let pitch = pitch_map(pitch_char)
-        .ok_or_else(|| format!("invalid pitch letter: {}", pitch_char))?;
+    let pitch =
+        pitch_map(pitch_char).ok_or_else(|| format!("invalid pitch letter: {}", pitch_char))?;
 
     let accidental_str = caps.get(2).map_or("", |m| m.as_str());
     let mut offset = 0;
 
     for ch in accidental_str.chars() {
-        offset += accidental_value(ch)
-            .ok_or_else(|| format!("Invalid accidental: {}", ch))?;
+        offset += accidental_value(ch).ok_or_else(|| format!("Invalid accidental: {}", ch))?;
     }
 
     let octave: i32 = match caps.get(3) {
-        Some(m) => m.as_str().parse().map_err(|_| "Invalid octave".to_string())?,
+        Some(m) => m
+            .as_str()
+            .parse()
+            .map_err(|_| "Invalid octave".to_string())?,
         None => 0,
     };
 
     let cents: f32 = match caps.get(4) {
         Some(m) => {
-            let cents_int: i32 = m.as_str().parse().map_err(|_| "Invalid cents".to_string())?;
+            let cents_int: i32 = m
+                .as_str()
+                .parse()
+                .map_err(|_| "Invalid cents".to_string())?;
             cents_int as f32 * 1e-2
         }
         None => 0.0,
@@ -130,14 +135,13 @@ pub fn note_to_midi(note: &str, round_midi: bool) -> Result<f32, String> {
     } else {
         return Ok(note_value as f32);
     }
-
 }
 
 // midi_to_note
 /*
 [docs]@vectorize(excluded=["octave", "cents", "key", "unicode"])
 def midi_to_note(
-   
+
     if cents and not octave:
         raise ParameterError("Cannot encode cents without octave information.")
 
@@ -162,16 +166,15 @@ pub fn midi_to_note(midi: f32, octave: bool, cents: bool, key: &str, unicode: bo
         panic!("Cannot encode cents without octave information.");
     }
     // currently using using sharps as the full implimentatino is not there yet !!!!
-    // if key_to_note is implimentented, we can replace this with that function 
+    // if key_to_note is implimentented, we can replace this with that function
     let note_names = [
-        "C", "C#", "D", "D#", "E", "F",
-        "F#", "G", "G#", "A", "A#", "B"
+        "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
     ];
 
     let note_num = midi.round() as i32;
     let note_cents = ((midi - note_num as f32) * 100.0).round() as i32;
 
-    let pitch_class= note_num.rem_euclid(12) as usize;
+    let pitch_class = note_num.rem_euclid(12) as usize;
     let mut note = note_names[pitch_class].to_string();
 
     if octave {
@@ -294,7 +297,7 @@ mod tests {
     fn test_note_to_midi_accidentals() {
         assert_eq!(note_to_midi("C#3", true), Ok(49.0));
         assert_eq!(note_to_midi("Bb-1", true), Ok(10.0));
-        assert_eq!(note_to_midi("A!8", true ), Ok(116.0));
+        assert_eq!(note_to_midi("A!8", true), Ok(116.0));
     }
 
     #[test]
@@ -322,5 +325,4 @@ mod tests {
     fn test_midi_to_hz_c4() {
         assert_eq!(midi_to_hz(60.0), 261.62555);
     }
-
 }

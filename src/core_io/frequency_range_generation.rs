@@ -4,7 +4,7 @@ use crate::core_io::frequency_unit_conversion::*;
 /*def fft_frequencies(*, sr: float = 22050, n_fft: int = 2048) -> np.ndarray:
     return np.fft.rfftfreq(n=n_fft, d=1.0 / sr)
 
-fft.rfftfreq function 
+fft.rfftfreq function
 if not isinstance(n, integer_types):
         raise ValueError("n should be an integer")
     val = 1.0 / (n * d)
@@ -24,7 +24,7 @@ pub fn fft_frequencies(sr: f32, n_fft: i32) -> Vec<f32> {
 }
 
 // cqt_frequencies
-/* 
+/*
 [docs]def cqt_frequencies(
     n_bins: int, *, fmin: float, bins_per_octave: int = 12, tuning: float = 0.0
 ) -> np.ndarray:
@@ -44,7 +44,7 @@ pub fn cqt_frequencies(n_bins: i32, fmin: f32, bins_per_octave: i32, tuning: f32
 }
 
 // mel_frequencies
-/* 
+/*
     # 'Center freqs' of mel bands - uniformly spaced between limits
     min_mel = hz_to_mel(fmin, htk=htk)
     max_mel = hz_to_mel(fmax, htk=htk)
@@ -64,7 +64,7 @@ pub fn mel_frequencies(n_mels: i32, fmin: f32, fmax: f32, htk: bool) -> Vec<f32>
 }
 
 // tempo_frequencies
-/* 
+/*
     bin_frequencies = np.zeros(int(n_bins), dtype=np.float64)
 
     bin_frequencies[0] = np.inf
@@ -117,8 +117,14 @@ mod tests {
         let n_fft = 2048;
         let expected = rfftfreq(n_fft, 1.0 / sr);
         assert_eq!(fft_frequencies(sr, n_fft), expected);
-        assert_eq!(fft_frequencies(44100.0, 4096), rfftfreq(4096, 1.0 / 44100.0));
-        assert_eq!(fft_frequencies(16000.0, 1024), rfftfreq(1024, 1.0 / 16000.0));
+        assert_eq!(
+            fft_frequencies(44100.0, 4096),
+            rfftfreq(4096, 1.0 / 44100.0)
+        );
+        assert_eq!(
+            fft_frequencies(16000.0, 1024),
+            rfftfreq(1024, 1.0 / 16000.0)
+        );
     }
 
     // Test cqt_frequencies\
@@ -131,8 +137,11 @@ mod tests {
         let expected: Vec<f32> = (0..n_bins)
             .map(|i| 2.0_f32.powf(i as f32 / bins_per_octave as f32) * fmin)
             .collect();
-        assert_eq!(cqt_frequencies(n_bins, fmin, bins_per_octave, tuning), expected);
-    }   
+        assert_eq!(
+            cqt_frequencies(n_bins, fmin, bins_per_octave, tuning),
+            expected
+        );
+    }
 
     // Test mel_frequencies
     #[test]
@@ -143,7 +152,9 @@ mod tests {
         let htk = false;
         let expected: Vec<f32> = (0..n_mels)
             .map(|i| {
-                let mel = hz_to_mel(fmin, htk) + (hz_to_mel(fmax, htk) - hz_to_mel(fmin, htk)) * i as f32 / (n_mels - 1) as f32;
+                let mel = hz_to_mel(fmin, htk)
+                    + (hz_to_mel(fmax, htk) - hz_to_mel(fmin, htk)) * i as f32
+                        / (n_mels - 1) as f32;
                 mel_to_hz(mel, htk)
             })
             .collect();
@@ -164,7 +175,7 @@ mod tests {
         ];
         assert_eq!(tempo_frequencies(n_bins, sr, hop_length), expected);
     }
-    
+
     // Test fourier_tempo_frequencies
     #[test]
     fn test_fourier_tempo_frequencies() {
@@ -172,7 +183,9 @@ mod tests {
         let win_length = 384;
         let hop_length = 512;
         let expected = fft_frequencies(sr * 60.0 / hop_length as f32, win_length);
-        assert_eq!(fourier_tempo_frequencies(sr, win_length, hop_length), expected);
+        assert_eq!(
+            fourier_tempo_frequencies(sr, win_length, hop_length),
+            expected
+        );
     }
-
 }
