@@ -148,9 +148,84 @@ pub fn blocks_to_time(block : i32, block_length : i32, hop_length : Option<i32>,
 
 
 
-// #[cfg(test)]
-// mod tests {
-//     use crate::core_io;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-// }
+    // Test frames_to_samples
+    #[test]
+    fn tst_frame_0_to_samples() {
+        assert_eq!(0, frames_to_samples(0, Some(512), None), "Failed with n_fft = None");
+        assert_eq!(1, frames_to_samples(0, Some(512), Some(2)), "Failed with n_fft = 2");
+        assert_eq!(1, frames_to_samples(0, Some(512), Some(3)), "Failed with n_fft = 3"); // Ensure rounding down
+    }
+
+    #[test]
+    fn test_frames_to_samples_non_zero() {
+        assert_eq!(1024, frames_to_samples(2, None, None), "Failed with n_fft = None");
+        assert_eq!(1025, frames_to_samples(2, None, Some(2)), "Failed with n_fft = 2");
+        assert_eq!(1025, frames_to_samples(2, None, Some(3)), "Failed with n_fft = 3");
+    }
+
+
+    // Test samples_to_frames
+    #[test]
+    fn test_sample_0_to_frames() {
+        assert_eq!(0, samples_to_frames(0, None, None), "Failed with n_fft = None");
+        assert_eq!(0, samples_to_frames(0, None, Some(2)), "Failed with n_fft = 2");
+        assert_eq!(0, samples_to_frames(0, None, Some(3)), "Failed with n_fft = 3");
+    }
+
+    #[test]
+    fn sample_to_frame_fft_boundary() {
+        assert_eq!(3, samples_to_frames(4000, Some(1024), Some(1857)), "Failed with n_fft=1857");
+        assert_eq!(2, samples_to_frames(4000, Some(1024), Some(1858)), "Failed with n_fft=1858");
+    }
+
+    #[test]
+    fn sample_to_frame_sample_boundary() {
+        assert_eq!(0, samples_to_frames(511, None, None), "Failed at boundary lower end");
+        assert_eq!(1, samples_to_frames(512, None, None), "Failed at boundary upper end");
+    }
+
+
+    // Test samples_to_time
+    #[test]
+    fn test_sample_to_time_0() {
+        assert_eq!(0.0, samples_to_time(0, None), "Failed with sr=None");
+        assert_eq!(0.0, samples_to_time(0, Some(44100)), "Failed with sr!=None");
+    }
+
+    #[test]
+    fn test_sample_to_time_not_0() {
+        assert_eq!(1.0, samples_to_time(22050, None), "Failed with sr=None");
+        assert_eq!(0.5, samples_to_time(22050, Some(44100)), "Failed with sr=44100");
+    }
+
+
+    // Test time_to_samples
+    #[test]
+    fn test_time_to_samples_0() {
+        assert_eq!(0, time_to_samples(0.0, None));
+    }
+
+    #[test]
+    fn test_time_to_samples_not_0() {
+        assert_eq!(22050, time_to_samples(1.0, None), "Failed with sr=None");
+        assert_eq!(22050, time_to_samples(1.0, Some(22050)), "Failed with sr=22050");
+        assert_eq!(22050, time_to_samples(0.5, Some(44100)), "Failed with sr=44100");
+    }
+
+
+    // Test blocks_to_frames
+    #[test]
+    fn test_block_to_frame_0() {
+        assert_eq!(0, blocks_to_frames(0, 1), "Failed when block index=0");
+        assert_eq!(0, blocks_to_frames(4, 0), "Failed when block size=0");
+    }
+
+    #[test]
+    fn test_block_to_frame_not_0() {
+        assert_eq!(20, blocks_to_frames(4, 5));
+    }
+}
