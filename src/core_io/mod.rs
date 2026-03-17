@@ -15,3 +15,7 @@ pub use signal_generation::*;
 
 pub mod miscellaneous;
 pub use miscellaneous::*;
+
+
+pub mod time_domain_processing;
+pub use time_domain_processing::*;
