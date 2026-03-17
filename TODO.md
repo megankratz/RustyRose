@@ -65,9 +65,9 @@ cargo test module_file
 
 ### CHECK POINT 1
 #### General 
-- [ ] Finalize base folder structure
-- [ ] Ensure project builds correctly with 'cargo build' ...
-- [ ] Decide on any naming conventions etc
+- [x] Finalize base folder structure
+- [x] Ensure project builds correctly with 'cargo build' ...
+- [x] Decide on any naming conventions etc
 - [x] add starter tests for existing modules
 #### Holly 
 - [x] Frequency Unit Conversion
@@ -91,7 +91,7 @@ cargo test module_file
 - [ ]
 #### Holly 
 - [ ] Time-Domain Processing (auto-correlate, lpc) 
-- [ ] Time-Domain Processing (zero-crossings, mu-compress, mu-expand)
+- [x] Time-Domain Processing (zero-crossings, mu-compress, mu-expand)
 #### Megan 
 - [ ] MFCCs + Mel-spectrogram
 - [ ] Various chroma features (at least chroma_stft)
