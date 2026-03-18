@@ -19,3 +19,6 @@ pub use miscellaneous::*;
 
 pub mod time_domain_processing;
 pub use time_domain_processing::*;
+
+pub mod music_notation;
+pub use music_notation::*;
