@@ -189,7 +189,7 @@ Utilities [https://librosa.org/doc/latest/util.html]
 
 # Megan Kratz
 * PI1 (basic) Magnitude-scaling (power_to_db, amplitude_to_db)
-* PI2 (basic) Feature manipulation (delta features, stacking, normalization utilities)
+* PI2 (basic) onset-detect
 * PI3 (expected) MFCCs + Mel-spectrogram
 * PI4 (expected) Various chroma features (at least chroma_stft)
 * PI5 (advanced) plp
