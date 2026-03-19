@@ -21,7 +21,8 @@ pub mod time_domain_processing;
 pub use time_domain_processing::*;
 
 pub mod music_notation;
-pub mod spectrum;
-pub use spectrum::*;
-
 pub use music_notation::*;
+
+pub mod pitch_tuning;
+
+pub use pitch_tuning::*;
