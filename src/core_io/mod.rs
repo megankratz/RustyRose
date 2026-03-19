@@ -24,5 +24,6 @@ pub mod music_notation;
 pub use music_notation::*;
 
 pub mod pitch_tuning;
+mod spectrum;
 
 pub use pitch_tuning::*;
