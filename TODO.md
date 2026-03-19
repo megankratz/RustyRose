@@ -74,7 +74,7 @@ cargo test module_file
 - [x] Frequency range generation
 #### Megan 
 - [X] Magnitude-scaling (power_to_db, amplitude_to_db)
-- [ ] Feature manipulation (delta features, stacking, normalization utilities)
+- [ ] onset-detect
 #### Jonathan  
 - [ ] Audio Loading,
 - [ ] Signal Generation
