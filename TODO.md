@@ -73,7 +73,7 @@ cargo test module_file
 - [x] Frequency Unit Conversion
 - [x] Frequency range generation
 #### Megan 
-- [ ] Magnitude-scaling (power_to_db, amplitude_to_db)
+- [X] Magnitude-scaling (power_to_db, amplitude_to_db)
 - [ ] Feature manipulation (delta features, stacking, normalization utilities)
 #### Jonathan  
 - [ ] Audio Loading,
