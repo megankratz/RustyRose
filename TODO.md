@@ -90,7 +90,7 @@ cargo test module_file
 - [ ]
 - [ ]
 #### Holly 
-- [ ] Time-Domain Processing (auto-correlate, lpc) 
+- [x] Time-Domain Processing (auto-correlate, lpc) 
 - [x] Time-Domain Processing (zero-crossings, mu-compress, mu-expand)
 #### Megan 
 - [ ] MFCCs + Mel-spectrogram
