@@ -1,40 +1,27 @@
+// https://librosa.org/doc/latest/core.html#frequency-range-generation
 use crate::core_io::frequency_unit_conversion::*;
 
-// fft_frequencies
-/*def fft_frequencies(*, sr: float = 22050, n_fft: int = 2048) -> np.ndarray:
-    return np.fft.rfftfreq(n=n_fft, d=1.0 / sr)
+// -------------------------------------------------------------------
+// FFT_FREQUENCIES -> 
+// parameters: sr (sample rate), n_fft (FFT window size)
+// returns: array of frequencies corresponding to the FFT bins
+// --------------------------------------------------------------------
+pub fn fft_frequencies(sr: f32, n_fft: i32) -> Vec<f32> {
+    return rfftfreq(n_fft, 1.0 / sr);
+}
 
-fft.rfftfreq function
-if not isinstance(n, integer_types):
-        raise ValueError("n should be an integer")
-    val = 1.0 / (n * d)
-    N = n // 2 + 1
-    results = arange(0, N, dtype=int, device=device)
-    return results * val
-*/
-
+// rfftfreq - helper for fft_frequencies, calculates the frequencies for the positive FFT bins
 pub fn rfftfreq(n: i32, d: f32) -> Vec<f32> {
     let val = 1.0 / (n as f32 * d);
     let N = n / 2 + 1;
     (0..N).map(|i| i as f32 * val).collect()
 }
 
-pub fn fft_frequencies(sr: f32, n_fft: i32) -> Vec<f32> {
-    return rfftfreq(n_fft, 1.0 / sr);
-}
-
-// cqt_frequencies
-/*
-[docs]def cqt_frequencies(
-    n_bins: int, *, fmin: float, bins_per_octave: int = 12, tuning: float = 0.0
-) -> np.ndarray:
-    correction: float = 2.0 ** (float(tuning) / bins_per_octave)
-    frequencies: np.ndarray = 2.0 ** (
-        np.arange(0, n_bins, dtype=float) / bins_per_octave
-    )
-
-    return correction * fmin * frequencies
-*/
+// ---------------------------------------------------------------------
+// CQT_FREQUENCIES -> comppute the center frequencies of the CQT bins
+// parameters: n_bins (number of frequency bins), fmin (minimum frequency), bins_per_octave, tuning
+// returns: array of frequencies corresponding to the CQT bins
+// -----------------------------------------------------------------------
 pub fn cqt_frequencies(n_bins: i32, fmin: f32, bins_per_octave: i32, tuning: f32) -> Vec<f32> {
     let correction = 2.0_f32.powf(tuning / bins_per_octave as f32);
     let frequencies: Vec<f32> = (0..n_bins)
@@ -43,17 +30,11 @@ pub fn cqt_frequencies(n_bins: i32, fmin: f32, bins_per_octave: i32, tuning: f32
     return frequencies.iter().map(|&f| correction * fmin * f).collect();
 }
 
-// mel_frequencies
-/*
-    # 'Center freqs' of mel bands - uniformly spaced between limits
-    min_mel = hz_to_mel(fmin, htk=htk)
-    max_mel = hz_to_mel(fmax, htk=htk)
-
-    mels = np.linspace(min_mel, max_mel, n_mels)
-
-    hz: np.ndarray = mel_to_hz(mels, htk=htk)
-    return hz
-*/
+// ---------------------------------------------------------------------
+// MEL_FREQUENCIES -> compute the center frequencies of the Mel bins
+// parameters: n_mels (number of Mel bins), fmin (minimum frequency), fmax (maximum frequency), htk (use HTK formula for Mel scale)
+// returns: array of frequencies corresponding to the Mel bins
+// ----------------------------------------------------------------------
 pub fn mel_frequencies(n_mels: i32, fmin: f32, fmax: f32, htk: bool) -> Vec<f32> {
     let min_mel = hz_to_mel(fmin, htk);
     let max_mel = hz_to_mel(fmax, htk);
@@ -63,15 +44,11 @@ pub fn mel_frequencies(n_mels: i32, fmin: f32, fmax: f32, htk: bool) -> Vec<f32>
     return mels.iter().map(|&m| mel_to_hz(m, htk)).collect();
 }
 
-// tempo_frequencies
-/*
-    bin_frequencies = np.zeros(int(n_bins), dtype=np.float64)
-
-    bin_frequencies[0] = np.inf
-    bin_frequencies[1:] = 60.0 * sr / (hop_length * np.arange(1.0, n_bins))
-
-    return bin_frequencies
-*/
+// ---------------------------------------------------------------------
+// TEMPO_FREQUENCIES -> compute the center frequencies of the tempo bins
+// parameters: n_bins (number of tempo bins), sr (sample rate), hop_length (hop length in samples)
+// returns: array of frequencies corresponding to the tempo bins
+// ----------------------------------------------------------------------
 pub fn tempo_frequencies(n_bins: i32, sr: f32, hop_length: i32) -> Vec<f32> {
     let mut bin_frequencies = vec![0.0; n_bins as usize];
     bin_frequencies[0] = std::f32::INFINITY;
@@ -81,15 +58,11 @@ pub fn tempo_frequencies(n_bins: i32, sr: f32, hop_length: i32) -> Vec<f32> {
     return bin_frequencies;
 }
 
-// fourier_tempo_frequencies
-/*
-[docs]def fourier_tempo_frequencies(
-    *, sr: float = 22050, win_length: int = 384, hop_length: int = 512
-) -> np.ndarray:
-    # sr / hop_length gets the frame rate
-    # multiplying by 60 turns frames / sec into frames / minute
-    return fft_frequencies(sr=sr * 60 / float(hop_length), n_fft=win_length)
-*/
+// ---------------------------------------------------------------------
+// FOURIER_TEMPO_FREQUENCIES -> compute the center frequencies of the tempo bins using Fourier analysis
+// parameters: sr (sample rate), win_length (window length in samples), hop_length (hop length in samples)
+// returns: array of frequencies corresponding to the tempo bins
+// ----------------------------------------------------------------------
 pub fn fourier_tempo_frequencies(sr: f32, win_length: i32, hop_length: i32) -> Vec<f32> {
     return fft_frequencies(sr * 60.0 / hop_length as f32, win_length);
 }
