@@ -1,4 +1,5 @@
 use crate::utilities::{self, frame};
+use std::cmp;
 
 pub fn yin(y : Vec<f32>,
     fmin : f32,
@@ -21,11 +22,31 @@ pub fn yin(y : Vec<f32>,
 
     utilities::valid_audio(&y);
 
-    let padded_y : Vec<f32> = pad(&y, (frame_length / 2) as usize);
+    // Center audio
+    let padded_y : Vec<f32> = if center {
+        pad(&y, (frame_length / 2) as usize)
+    } else {
+        y
+    };
 
-    let y_frames : Vec<Vec<f32>> = frame(y, frame_length, hop_length);
-    
-    
+    // Frame audio
+    let y_frames : Vec<Vec<f32>> = frame(padded_y, frame_length, hop_length);
+
+    // Calculate min and max periods
+    let min_period : usize = (sr as f32 / fmax).floor() as usize;
+    let max_period : usize = cmp::min(
+        (sr as f32 / fmin).ceil() as usize,
+        (frame_length - 1) as usize
+    );
+
+    // Calculate cumulative mean normalized difference function
+    let yin_frames = cumulative_mean_normalized_difference(
+        y_frames, min_period, max_period
+    );
+
+
+
+
 }
 
 fn check_yin_params(sr : i32, fmin : f32, fmax : f32, frame_length : i32) {
@@ -65,4 +86,162 @@ fn pad(y : &Vec<f32>, padding : usize) -> Vec<f32> {
     result.extend_from_slice(y);
     result.extend(vec![0.0; padding]);
     result    
+}
+
+
+pub fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
+                                        min_period : usize,
+                                        max_period : usize)
+                                         -> Vec<Vec<f32>>
+{
+    let n_frames : usize = y_frames.len();
+    let frame_length : usize = y_frames[0].len();
+
+    let out_size : usize = max_period - min_period + 1;
+
+    let mut result : Vec<Vec<f32>> = vec![vec![0.0; out_size]; n_frames];
+
+    for (frame_idx, frame) in y_frames.iter().enumerate()
+    {
+        // Difference function d(tau)
+        let mut d = vec![0.0f32; max_period + 1];
+
+        for tau in 1..=max_period {
+            let mut sum = 0.0;
+
+            for i in 0..(frame_length - tau) {
+                let diff = frame[i] - frame[i + tau];
+                sum += diff * diff;
+            }
+
+            d[tau] = sum;
+        }
+
+        // CMND
+        let mut running_sum = 0.0;
+
+        for tau in 1..=max_period {
+
+            running_sum += d[tau];
+
+            let cmnd = if running_sum == 0.0 {
+                1.0
+            } else {
+                d[tau] * (tau as f32) / running_sum
+            };
+
+            if tau >= min_period {
+                result[frame_idx][tau - min_period] = cmnd;
+            }
+        }
+    }
+
+    result
+}
+
+
+pub fn parabolic_interpolation(yin_frames: &Vec<Vec<f32>>) -> Vec<Vec<f32>> {
+
+    let n_frames = yin_frames.len();
+    let n_tau = yin_frames[0].len();
+
+    let mut shifts = vec![vec![0.0; n_tau]; n_frames];
+
+    for f in 0..n_frames {
+
+        for t in 1..n_tau-1 {
+
+            let ym1 = yin_frames[f][t-1];
+            let y0  = yin_frames[f][t];
+            let yp1 = yin_frames[f][t+1];
+
+            let denom = ym1 - 2.0*y0 + yp1;
+
+            if denom.abs() > 1e-12 {
+                shifts[f][t] = 0.5 * (ym1 - yp1) / denom;
+            }
+        }
+    }
+
+    shifts
+}
+
+
+#[cfg(test)]
+mod tests
+{
+    use crate::core_io::*;
+
+    #[test]
+    fn test_cmnd_shape() {
+        let frames = vec![
+            vec![1.0, 2.0, 3.0, 4.0],
+            vec![2.0, 3.0, 4.0, 5.0],
+        ];
+
+        let min_period = 1;
+        let max_period = 3;
+
+        let result = cumulative_mean_normalized_difference(
+            frames,
+            min_period,
+            max_period,
+        );
+
+        assert_eq!(result.len(), 2); // n_frames
+        assert_eq!(result[0].len(), 3); // max_period - min_period + 1
+    }
+
+    #[test]
+    fn test_cmnd_constant_signal() {
+
+        let frames = vec![
+            vec![1.0, 1.0, 1.0, 1.0, 1.0]
+        ];
+
+        let result = cumulative_mean_normalized_difference(frames, 1, 3);
+
+        for val in &result[0] {
+            assert!((*val - 1.0).abs() < 1e-6);
+        }
+    }
+
+    #[test]
+    fn test_cmnd_periodic_signal() {
+
+        let frames = vec![
+            vec![1.0, -1.0, 1.0, -1.0, 1.0, -1.0]
+        ];
+
+        let result = cumulative_mean_normalized_difference(frames, 1, 4);
+
+        let cmnd = &result[0];
+
+        let min_index = cmnd
+            .iter()
+            .enumerate()
+            .min_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+            .unwrap()
+            .0;
+
+        assert_eq!(min_index + 1, 2); // τ = 2
+    }
+
+    #[test]
+    fn test_cmnd_multiple_frames() {
+
+        let frames = vec![
+            vec![1.0, -1.0, 1.0, -1.0],
+            vec![1.0, 1.0, 1.0, 1.0],
+        ];
+
+        let result = cumulative_mean_normalized_difference(frames, 1, 3);
+
+        assert_eq!(result.len(), 2);
+
+        // second frame should be constant -> CMND ≈ 1
+        for val in &result[1] {
+            assert!((*val - 1.0).abs() < 1e-6);
+        }
+    }
 }
