@@ -1,7 +1,7 @@
 use crate::utilities::{self, frame};
 use std::cmp;
 
-pub fn yin(y : Vec<f32>,
+pub fn yin(y : &Vec<f32>,
     fmin : f32,
     fmax : f32,
     sr : Option<i32>,
@@ -9,7 +9,7 @@ pub fn yin(y : Vec<f32>,
     hop_length : Option<i32>,
     trough_threshold : Option<f32>,
     center : Option<bool>,
-    pad_mode : Option<&str>) {
+    pad_mode : Option<&str>) -> Vec<f32> {
 
     let sr : i32 = sr.unwrap_or(22050);
     let frame_length : i32 = frame_length.unwrap_or(2048);
@@ -24,9 +24,9 @@ pub fn yin(y : Vec<f32>,
 
     // Center audio
     let padded_y : Vec<f32> = if center {
-        pad(&y, (frame_length / 2) as usize)
+        pad(y, (frame_length / 2) as usize)
     } else {
-        y
+        y.to_vec()
     };
 
     // Frame audio
@@ -44,9 +44,68 @@ pub fn yin(y : Vec<f32>,
         y_frames, min_period, max_period
     );
 
+    let parabolic_shifts : Vec<Vec<f32>> = parabolic_interpolation(&yin_frames);
 
+    let mut is_trough = utilities::localmin(&yin_frames);
 
+    let n_frames : usize = yin_frames.len();
+    let n_tau : usize = yin_frames[0].len();
 
+    // Check if any frame is a trough
+    for f in 0..n_frames 
+    {
+        if n_tau > 1 
+        {
+            is_trough[f][0] = (yin_frames[f][0] < yin_frames[f][1]);
+        }
+    }
+
+    let mut is_threshold_trough = vec![vec![false; n_tau]; n_frames];
+    for f in 0..n_frames {
+        for t in 0..n_tau {
+            is_threshold_trough[f][t] =
+                is_trough[f][t] && yin_frames[f][t] < trough_threshold;
+        }
+    }
+    
+    let mut f0 : Vec<f32> = vec![0.0; n_frames];
+
+    for f in 0..n_frames 
+    {
+        let mut tau_index : Option<usize> = None;
+        // Only search tau indices corresponding to fmin..fmax
+        let min_tau_idx = (sr as f32 / fmax).floor() as usize - min_period;
+        let max_tau_idx = cmp::min((sr as f32 / fmin).ceil() as usize - min_period, n_tau - 1);
+
+        for t in min_tau_idx..=max_tau_idx {
+            if is_threshold_trough[f][t] {
+                tau_index = Some(t);
+                break;
+            }
+        }
+
+        // argmin function
+        let global_min = yin_frames[f]
+            .iter()
+            .enumerate()
+            .min_by(|a,b| a.1.total_cmp(b.1))
+            .unwrap().0 as i32;
+
+        if tau_index.is_none() {
+            tau_index = Some(
+                (min_tau_idx..=max_tau_idx)
+                    .min_by(|&a, &b| yin_frames[f][a].total_cmp(&yin_frames[f][b]))
+                    .unwrap()
+            );
+        }
+        let tau_index = tau_index.unwrap_or(global_min as usize);
+
+        let r_tau : f32 = min_period as f32 + tau_index as f32 + parabolic_shifts[f][tau_index];
+
+        f0[f] = sr as f32 / r_tau;
+    }
+
+    f0
 }
 
 fn check_yin_params(sr : i32, fmin : f32, fmax : f32, frame_length : i32) {
@@ -95,7 +154,7 @@ pub fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
                                          -> Vec<Vec<f32>>
 {
     let n_frames : usize = y_frames.len();
-    let frame_length : usize = y_frames[0].len();
+    // let frame_length : usize = y_frames[0].len();
 
     let out_size : usize = max_period - min_period + 1;
 
@@ -103,10 +162,13 @@ pub fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
 
     for (frame_idx, frame) in y_frames.iter().enumerate()
     {
+        let frame_length = frame.len();
+        let tau_max = max_period.min(frame_length - 1);
+
         // Difference function d(tau)
         let mut d = vec![0.0f32; max_period + 1];
 
-        for tau in 1..=max_period {
+        for tau in 1..=tau_max {
             let mut sum = 0.0;
 
             for i in 0..(frame_length - tau) {
@@ -124,10 +186,14 @@ pub fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
 
             running_sum += d[tau];
 
-            let cmnd = if running_sum == 0.0 {
+            let cmnd = if tau == 0 {
                 1.0
             } else {
-                d[tau] * (tau as f32) / running_sum
+                if running_sum == 0.0 {
+                    1.0
+                } else {
+                    d[tau] / (running_sum / tau as f32)
+                }
             };
 
             if tau >= min_period {
@@ -142,20 +208,20 @@ pub fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
 
 pub fn parabolic_interpolation(yin_frames: &Vec<Vec<f32>>) -> Vec<Vec<f32>> {
 
-    let n_frames = yin_frames.len();
-    let n_tau = yin_frames[0].len();
+    let n_frames : usize = yin_frames.len();
+    let n_tau : usize = yin_frames[0].len();
 
-    let mut shifts = vec![vec![0.0; n_tau]; n_frames];
+    let mut shifts : Vec<Vec<f32>> = vec![vec![0.0; n_tau]; n_frames];
 
     for f in 0..n_frames {
 
         for t in 1..n_tau-1 {
 
-            let ym1 = yin_frames[f][t-1];
-            let y0  = yin_frames[f][t];
-            let yp1 = yin_frames[f][t+1];
+            let ym1 : f32 = yin_frames[f][t-1];
+            let y0 : f32  = yin_frames[f][t];
+            let yp1 : f32 = yin_frames[f][t+1];
 
-            let denom = ym1 - 2.0*y0 + yp1;
+            let denom : f32 = ym1 - 2.0*y0 + yp1;
 
             if denom.abs() > 1e-12 {
                 shifts[f][t] = 0.5 * (ym1 - yp1) / denom;
@@ -207,8 +273,8 @@ mod tests
     }
 
     #[test]
-    fn test_cmnd_periodic_signal() {
-
+    fn test_cmnd_periodic_signal() 
+    {
         let frames = vec![
             vec![1.0, -1.0, 1.0, -1.0, 1.0, -1.0]
         ];
@@ -228,8 +294,8 @@ mod tests
     }
 
     #[test]
-    fn test_cmnd_multiple_frames() {
-
+    fn test_cmnd_multiple_frames() 
+    {
         let frames = vec![
             vec![1.0, -1.0, 1.0, -1.0],
             vec![1.0, 1.0, 1.0, 1.0],
@@ -240,8 +306,27 @@ mod tests
         assert_eq!(result.len(), 2);
 
         // second frame should be constant -> CMND ≈ 1
-        for val in &result[1] {
+        for val in &result[1] 
+        {
             assert!((*val - 1.0).abs() < 1e-6);
         }
     }
+
+    #[test]
+    fn test_yin_440()
+    {
+        let freq: f32 = 440.0;
+        let sr: i32 = 22050;
+
+        let signal: Vec<f32> = (0..22050 * 2)
+            .map(|i| (2.0 * std::f32::consts::PI * freq * i as f32 / sr as f32).sin())
+            .collect();
+
+        let output = yin(&signal, 20.0, 1000.0, Some(sr), None, None, None, None, None);
+
+        let mean : f32 = output.iter().copied().sum::<f32>() / output.len() as f32;
+
+        assert!((440.0 - mean).abs() < 10.0);
+    }
+
 }
