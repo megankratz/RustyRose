@@ -139,6 +139,23 @@ fn check_yin_params(sr : i32, fmin : f32, fmax : f32, frame_length : i32) {
 }
 
 
+pub fn piptrack(y : Vec<f32>, 
+    sr : Option<i32>, 
+    n_fft : Option<i32>, 
+    hop_length : Option<i32>,
+    threshold : f32,
+    fmin : f32,
+    fmax : f32,
+    win_length : Option<i32>)
+    -> Vec<f32>
+{
+    
+
+
+    vec![]
+}
+
+
 fn pad(y : &Vec<f32>, padding : usize) -> Vec<f32> {
     let mut result : Vec<f32> = Vec::with_capacity(y.len() + 2*padding);
     result.extend(vec![0.0; padding]);
