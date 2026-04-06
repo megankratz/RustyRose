@@ -119,6 +119,50 @@ pub fn remix(
 }
 
 
+pub fn preemphasis(
+    y : &Array1<f64>,
+    coef : Option<f64>,
+    zi_in : Option<f64>
+) -> (Array1<f64>, f64){
+
+    let mut zi = match zi_in {
+        Some(v) => v,
+        None => 2.0 * y[0] - y[1]
+    };
+
+    let mut out : Array1<f64> = Array1::<f64>::zeros(y.len());
+    for (i, &x) in y.iter().enumerate() {
+        out[i] = x - coef.unwrap_or(0.97) * zi;
+        zi = x;
+    }
+
+    let zf : f64 = zi;
+    (out, zf)
+}
+
+
+pub fn deemphasis(
+    y : &Array1<f64>,
+    coef : Option<f64>,
+    zi_in : Option<f64>
+) -> (Array1<f64>, f64) {
+
+    let mut zi = match zi_in {
+        Some(v) => v,
+        None => (2.0 - coef.unwrap_or(0.97)) * y[0] - y[1] / (3.0 - coef.unwrap_or(0.97))
+    };
+
+    let mut x : Array1<f64> = Array1::<f64>::zeros(y.len());
+    for i in 0..y.len() {
+        let val = y[i] + coef.unwrap_or(0.97) * zi;
+        x[i] = val;
+        zi = val;
+    }
+
+    let zf = zi;
+    (x, zf)
+}
+
 
 fn signal_to_frame_nonsilent(
     y : &Array1<f64>,
@@ -140,4 +184,95 @@ fn signal_to_frame_nonsilent(
     |col| {col.mean().unwrap()});
 
     db_reduced.mapv(|x| x > -top_db)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::effects::*;
+    use ndarray::{array};
+
+    // Preemphasis
+    #[test]
+    fn test_preemphasis_basic() {
+        let y = array![1.0, 2.0, 3.0];
+        let coef = Some(0.5);
+
+        let (out, zf) = preemphasis(&y, coef, Some(0.0));
+
+        assert!((out[0] - 1.0).abs() < 1e-9);
+        assert!((out[1] - 1.5).abs() < 1e-9);
+        assert!((out[2] - 2.0).abs() < 1e-9);
+        assert!((zf - 3.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_preemphasis_identity() {
+        let y = array![0.0, 1.0, -2.0];
+
+        let (x, _) = preemphasis(&y, Some(0.0), Some(0.0));
+
+        assert!((x[0] - y[0]).abs() < 1e-9);
+        assert!((x[1] - y[1]).abs() < 1e-9);
+        assert!((x[2] - y[2]).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_preemphasis_default_zi() {
+        let y = array![2.0, 1.0];
+        let coef = Some(0.5);
+
+        let (out, _) = preemphasis(&y, coef, None);
+
+        let zi = 2.0 * y[0] - y[1]; // default
+        let expected0 = y[0] - 0.5 * zi;
+
+        assert!((out[0] - expected0).abs() < 1e-9);
+    }
+
+    // Deemphasis
+    #[test]
+    fn test_deemphasis_identity() {
+        let y = array![0.0,1.0,-2.0];
+        let (x , _) = deemphasis(&y, Some(0.0), None);
+
+        assert!((x[0] - y[0]).abs() < 1e-9);
+        assert!((x[1] - y[1]).abs() < 1e-9);
+        assert!((x[2] - y[2]).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_deemphasis_basic() {
+        let y = array![1.0, 2.0, 3.0];
+        let coef = Some(0.5);
+        let zi_in = Some(0.0);
+
+        let (x, zf) = deemphasis(&y, coef, zi_in);
+
+        assert!((x[0] - 1.0).abs() < 1e-9);
+        assert!((x[1] - 2.5).abs() < 1e-9);
+        assert!((x[2] - 4.25).abs() < 1e-9);
+        assert!((zf - 4.25).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_default_coef() {
+        let y = array![1.0, 1.0];
+        let (x1, _) = deemphasis(&y, None, Some(0.0));
+        let (x2, _) = deemphasis(&y, Some(0.97), Some(0.0));
+
+        assert!((x1[0] - x2[0]).abs() < 1e-9);
+        assert!((x1[1] - x2[1]).abs() < 1e-9);
+    }
+    #[test]
+    fn test_deemph_default_zi() {
+        let y = array![2.0, 1.0];
+        let coef = Some(0.5);
+
+        let (x, _) = deemphasis(&y, coef, None);
+
+        let expected_zi = (2.0 - 0.5) * 2.0 - 1.0 / (3.0 - 0.5);
+        let expected_x0 = 2.0 + 0.5 * expected_zi;
+
+        assert!((x[0] - expected_x0).abs() < 1e-9);
+    }
 }
