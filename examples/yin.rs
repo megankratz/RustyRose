@@ -9,7 +9,7 @@ fn main()
         .map(|i| (2.0 * std::f32::consts::PI * freq * i as f32 / sr as f32).sin())
         .collect();
 
-    let output = yin(&signal, 400.0, 500.0, Some(sr), None, None, None, None, None);
+    let output = yin(&signal, 400.0, 500.0, Some(sr), None, None, None, None);
 
     // Use median to stabilize pure sine
     let median_f0 = median_f32(&output);

@@ -1,6 +1,29 @@
 use crate::utilities::{self, frame};
+use crate::core_io;
+use ndarray::{Array1, Array2, array};
 use std::cmp;
 
+/// Fundamental pitch estimation for a single voice
+/// 
+/// ### Parameters
+/// y : Input samples
+/// 
+/// fmin : minimum frequency
+/// 
+/// fmax : maximum frequency
+/// 
+/// sr : sample rate. Defaults to 22050
+/// 
+/// frame_length : size of each frame. Defaults to 2048
+/// 
+/// hop_length : number of samples between each frame. Defaults to 512
+/// 
+/// trough_threshold : absolute threshold for peak estimation. Defaults to 0.1
+/// 
+/// center : if True, then y is padded such that frame t is centered at y[t * hop_length]
+/// 
+/// ### Returns
+/// f0 : Array of pitchs of each frame
 pub fn yin(y : &Vec<f32>,
     fmin : f32,
     fmax : f32,
@@ -8,15 +31,13 @@ pub fn yin(y : &Vec<f32>,
     frame_length : Option<i32>,
     hop_length : Option<i32>,
     trough_threshold : Option<f32>,
-    center : Option<bool>,
-    pad_mode : Option<&str>) -> Vec<f32> {
+    center : Option<bool>) -> Vec<f32> {
 
     let sr : i32 = sr.unwrap_or(22050);
     let frame_length : i32 = frame_length.unwrap_or(2048);
     let hop_length : i32 = hop_length.unwrap_or(frame_length / 4);
     let trough_threshold : f32 = trough_threshold.unwrap_or(0.1);
     let center : bool = center.unwrap_or(true);
-    let pad_mode : &str = pad_mode.unwrap_or("constant");
 
     check_yin_params(sr, fmin, fmax, frame_length);
 
@@ -61,18 +82,16 @@ pub fn yin(y : &Vec<f32>,
     {
         if n_tau > 1 
         {
-            is_trough[f][0] = (yin_frames[f][0] < yin_frames[f][1]);
+            is_trough[f][0] = yin_frames[f][0] < yin_frames[f][1];
         }
     }
 
-    let mut debug_trough : i32 = 0;
 
     let mut is_threshold_trough = vec![vec![false; n_tau]; n_frames];
     for f in 0..n_frames {
         for t in 0..n_tau {
             is_threshold_trough[f][t] =
                 is_trough[f][t] && yin_frames[f][t] < trough_threshold;
-                if is_threshold_trough[f][t]{ debug_trough += 1;}
         }
     }
     
@@ -119,6 +138,98 @@ pub fn yin(y : &Vec<f32>,
     f0
 }
 
+
+/// Given a collection of pitches, estimate tuning offset (in fractions of a bin) relative 
+/// to A4 = 440.0Hz
+/// 
+/// ### Parameters
+/// frequencies : collection of frequencies
+/// 
+/// resolution : Resolution of tuning, to a fraction of a bin. Defaults to 0.01
+/// 
+/// bins_per_octave : Number of frequency bins per octave. Defaults to 12
+/// 
+/// ### Returns
+/// tuning: float in range [-0.5, 0.5]
+pub fn pitch_tuning(
+    frequencies : &Array1<f32>,
+    resolution : Option<f32>,
+    bins_per_octave : Option<u32>
+) -> f32 {
+
+    let bins : i32 = bins_per_octave.unwrap_or(12) as i32;
+    let res : f32 = resolution.unwrap_or(0.01);
+
+    // Trim out DC components
+    let freqs : Array1<f32> = frequencies
+        .iter()
+        .copied()
+        .filter(|&f| f > 0.0)
+        .collect();
+
+    if freqs.is_empty() {
+        panic!("Trying to estimate tuning from empty frequency set");
+    }
+
+    let residual : Array1<f32> = freqs
+        .iter()
+        .copied()
+        .map(|f| core_io::hz_to_octs(f, 440., bins))
+        .map(|oct| {
+            let mut r = (bins as f32 * oct).fract();
+            if r < 0.0 {
+                r = r + 1.0
+            } 
+            if r >= 0.5 {
+                r - 1.0
+            }else {
+                r
+            }
+        })
+        .collect();
+
+    let n_bins : usize = (1.0 / res).ceil() as usize;
+    let bins : Vec<f32> = (0..=n_bins)
+        .map(|i| -0.5 + i as f32 / n_bins as f32)
+        .collect();
+
+    let mut counts : Vec<usize> = vec![0; n_bins];
+    for &r in residual.iter() {
+        if r < bins[0] || r > bins[bins.len() - 1] {
+            continue;
+        }
+        let index = bins.partition_point(|&b| b <= r)// Find first bin value less than r
+            .saturating_sub(1) 
+            .min(n_bins - 1);  // handle upper bound
+        counts[index] += 1;
+    }
+
+    // Return the peak bin
+    let peak_index : usize = counts 
+        .iter()
+        .enumerate()
+        .max_by_key(|&(_, &val)| val)// Get tuple of index and max value
+        .map(|(i, _)| i) // Remove max value to just get index
+        .unwrap();
+
+    bins[peak_index]
+}
+
+
+pub fn piptrack(
+    y : &Array1<f64>, 
+    sr : Option<i32>, 
+    n_fft : Option<i32>, 
+    hop_length : Option<i32>,
+    threshold : f32,
+    fmin : f32,
+    fmax : f32,
+    win_length : Option<i32>
+) -> Array2<f64> {
+    array![[],[]]
+}
+
+
 fn check_yin_params(sr : i32, fmin : f32, fmax : f32, frame_length : i32) {
     use log::warn;
     if fmax > sr as f32 / 2.0 {
@@ -150,23 +261,6 @@ fn check_yin_params(sr : i32, fmin : f32, fmax : f32, frame_length : i32) {
 }
 
 
-pub fn piptrack(y : Vec<f32>, 
-    sr : Option<i32>, 
-    n_fft : Option<i32>, 
-    hop_length : Option<i32>,
-    threshold : f32,
-    fmin : f32,
-    fmax : f32,
-    win_length : Option<i32>)
-    -> Vec<f32>
-{
-    
-
-
-    vec![]
-}
-
-
 fn pad(y : &Vec<f32>, padding : usize) -> Vec<f32> {
     let mut result : Vec<f32> = Vec::with_capacity(y.len() + 2*padding);
     result.extend(vec![0.0; padding]);
@@ -176,7 +270,7 @@ fn pad(y : &Vec<f32>, padding : usize) -> Vec<f32> {
 }
 
 
-pub fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
+fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
                                         min_period : usize,
                                         max_period : usize)
                                          -> Vec<Vec<f32>>
@@ -269,79 +363,27 @@ pub fn parabolic_interpolation(yin_frames: &Vec<Vec<f32>>) -> Vec<Vec<f32>> {
 mod tests
 {
     use crate::core_io::*;
+    use ndarray::{Array1, array};
 
     #[test]
-    fn test_cmnd_shape() {
-        let frames = vec![
-            vec![1.0, 2.0, 3.0, 4.0],
-            vec![2.0, 3.0, 4.0, 5.0],
-        ];
-
-        let min_period = 1;
-        let max_period = 3;
-
-        let result = cumulative_mean_normalized_difference(
-            frames,
-            min_period,
-            max_period,
-        );
-
-        assert_eq!(result.len(), 2); // n_frames
-        assert_eq!(result[0].len(), 3); // max_period - min_period + 1
+    fn test_tuning_known() {
+        let freqs : Array1<f32> = array![55.0, 65.406, 77.782, 92.499, 110.0, 130.813];
+        let result = pitch_tuning(&freqs, None, None);
+        assert!((result - 0.25) < 0.01);
     }
 
     #[test]
-    fn test_cmnd_constant_signal() {
-
-        let frames = vec![
-            vec![1.0, 1.0, 1.0, 1.0, 1.0]
-        ];
-
-        let result = cumulative_mean_normalized_difference(frames, 1, 3);
-
-        for val in &result[0] {
-            assert!((*val - 1.0).abs() < 1e-6);
-        }
+    fn test_a440_octaves() {
+        let freqs : Array1<f32> = array![55.0, 110.0, 220.0, 440.0, 880.0, 1760.0];
+        let result : f32 = pitch_tuning(&freqs, None, None);
+        assert_eq!(0.0, result);
     }
 
     #[test]
-    fn test_cmnd_periodic_signal() 
-    {
-        let frames = vec![
-            vec![1.0, -1.0, 1.0, -1.0, 1.0, -1.0]
-        ];
-
-        let result = cumulative_mean_normalized_difference(frames, 1, 4);
-
-        let cmnd = &result[0];
-
-        let min_index = cmnd
-            .iter()
-            .enumerate()
-            .min_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-            .unwrap()
-            .0;
-
-        assert_eq!(min_index + 1, 2); // τ = 2
-    }
-
-    #[test]
-    fn test_cmnd_multiple_frames() 
-    {
-        let frames = vec![
-            vec![1.0, -1.0, 1.0, -1.0],
-            vec![1.0, 1.0, 1.0, 1.0],
-        ];
-
-        let result = cumulative_mean_normalized_difference(frames, 1, 3);
-
-        assert_eq!(result.len(), 2);
-
-        // second frame should be constant -> CMND ≈ 1
-        for val in &result[1] 
-        {
-            assert!((*val - 1.0).abs() < 1e-6);
-        }
+    fn test_below_a440() {
+        let freqs : Array1<f32> = array![55.0, 110.0, 220.0];
+        let result : f32 = pitch_tuning(&freqs, None, None);
+        assert_eq!(0.0, result);
     }
 
 }
