@@ -36,7 +36,6 @@ pub fn yin(y : &Vec<f32>,
     let y_frames: Vec<Vec<f32>> = (0..n_frames)
         .map(|f| (0..frame_len).map(|i| y_frames_t[i][f]).collect())
         .collect();
-    println!("{:?}",y_frames[0].len());    
 
     // Calculate min and max periods
     let min_period : usize = (sr as f32 / fmax).floor() as usize;
@@ -76,10 +75,6 @@ pub fn yin(y : &Vec<f32>,
                 if is_threshold_trough[f][t]{ debug_trough += 1;}
         }
     }
-    println!("trough count: {debug_trough}");
-    println!("min_period {}", min_period);
-    println!("max_period {}", max_period);
-    println!("first 10 values of first yin frame: {:?}", &yin_frames[0][0..20]);
     
     let mut f0 : Vec<f32> = vec![0.0; n_frames];
 
@@ -195,8 +190,6 @@ pub fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
     let out_size : usize = tau_max - min_period + 1;
     let mut result : Vec<Vec<f32>> = vec![vec![0.0; out_size]; n_frames];
 
-    println!("tau_max : {tau_max}");
-    println!("max_period : {max_period}");
 
     for (frame_idx, frame) in y_frames.iter().enumerate()
     {
@@ -350,22 +343,5 @@ mod tests
             assert!((*val - 1.0).abs() < 1e-6);
         }
     }
-
-    // #[test]
-    // fn test_yin_440()
-    // {
-    //     let freq: f32 = 440.0;
-    //     let sr: i32 = 22050;
-
-    //     let signal: Vec<f32> = (0..22050 * 2)
-    //         .map(|i| (2.0 * std::f32::consts::PI * freq * i as f32 / sr as f32).sin())
-    //         .collect();
-
-    //     let output = yin(&signal, 20.0, 1000.0, Some(sr), None, None, None, None, None);
-
-    //     let mean : f32 = output.iter().copied().sum::<f32>() / output.len() as f32;
-
-    //     assert!((440.0 - mean).abs() < 10.0);
-    // }
 
 }
