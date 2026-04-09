@@ -30,7 +30,13 @@ pub fn yin(y : &Vec<f32>,
     };
 
     // Frame audio
-    let y_frames : Vec<Vec<f32>> = frame(padded_y, frame_length, hop_length);
+    let y_frames_t : Vec<Vec<f32>> = frame(padded_y, frame_length, hop_length);
+    let n_frames = y_frames_t[0].len();
+    let frame_len = y_frames_t.len();
+    let y_frames: Vec<Vec<f32>> = (0..n_frames)
+        .map(|f| (0..frame_len).map(|i| y_frames_t[i][f]).collect())
+        .collect();
+    println!("{:?}",y_frames[0].len());    
 
     // Calculate min and max periods
     let min_period : usize = (sr as f32 / fmax).floor() as usize;
@@ -60,13 +66,20 @@ pub fn yin(y : &Vec<f32>,
         }
     }
 
+    let mut debug_trough : i32 = 0;
+
     let mut is_threshold_trough = vec![vec![false; n_tau]; n_frames];
     for f in 0..n_frames {
         for t in 0..n_tau {
             is_threshold_trough[f][t] =
                 is_trough[f][t] && yin_frames[f][t] < trough_threshold;
+                if is_threshold_trough[f][t]{ debug_trough += 1;}
         }
     }
+    println!("trough count: {debug_trough}");
+    println!("min_period {}", min_period);
+    println!("max_period {}", max_period);
+    println!("first 10 values of first yin frame: {:?}", &yin_frames[0][0..20]);
     
     let mut f0 : Vec<f32> = vec![0.0; n_frames];
 
@@ -74,8 +87,10 @@ pub fn yin(y : &Vec<f32>,
     {
         let mut tau_index : Option<usize> = None;
         // Only search tau indices corresponding to fmin..fmax
-        let min_tau_idx = (sr as f32 / fmax).floor() as usize - min_period;
-        let max_tau_idx = cmp::min((sr as f32 / fmin).ceil() as usize - min_period, n_tau - 1);
+        // let min_tau_idx = (sr as f32 / fmax).floor() as usize - min_period;
+        // let max_tau_idx = cmp::min((sr as f32 / fmin).ceil() as usize - min_period, n_tau - 1);
+        let min_tau_idx = 0;
+        let max_tau_idx = n_tau - 1;
 
         for t in min_tau_idx..=max_tau_idx {
             if is_threshold_trough[f][t] {
@@ -83,6 +98,7 @@ pub fn yin(y : &Vec<f32>,
                 break;
             }
         }
+
 
         // argmin function
         let global_min = yin_frames[f]
@@ -173,14 +189,20 @@ pub fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
     let n_frames : usize = y_frames.len();
     // let frame_length : usize = y_frames[0].len();
 
-    let out_size : usize = max_period - min_period + 1;
+    // let out_size : usize = max_period - min_period + 1;
 
+    let tau_max = max_period.min(y_frames[1].len() / 2);
+    let out_size : usize = tau_max - min_period + 1;
     let mut result : Vec<Vec<f32>> = vec![vec![0.0; out_size]; n_frames];
+
+    println!("tau_max : {tau_max}");
+    println!("max_period : {max_period}");
 
     for (frame_idx, frame) in y_frames.iter().enumerate()
     {
         let frame_length = frame.len();
-        let tau_max = max_period.min(frame_length - 1);
+        // let tau_max = max_period.min(frame_length - 1);
+
 
         // Difference function d(tau)
         let mut d = vec![0.0f32; max_period + 1];
@@ -199,7 +221,7 @@ pub fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
         // CMND
         let mut running_sum = 0.0;
 
-        for tau in 1..=max_period {
+        for tau in 1..=tau_max {
 
             running_sum += d[tau];
 
@@ -209,7 +231,7 @@ pub fn cumulative_mean_normalized_difference(y_frames : Vec<Vec<f32>>,
                 if running_sum == 0.0 {
                     1.0
                 } else {
-                    d[tau] / (running_sum / tau as f32)
+                    d[tau] * tau as f32 / running_sum
                 }
             };
 
