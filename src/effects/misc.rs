@@ -1,15 +1,34 @@
+use core::f64;
+
 use ndarray::{Array1, Array2, ArrayD, Axis, s, array, concatenate, arr1};
 use crate::{core_io::*, feature::rms};
 
+/// Trim leading and trailing silence from input samples
+/// 
+/// ### Arguments
+/// y : Input samples
+/// 
+/// top_db : Threshold in decibels, below which is considered silence
+/// 
+/// ref_ : Reference amplitude. If None, uses max function to get reference
+/// 
+/// frame_length : size of each frame. Defaults to 2048
+/// 
+/// hop_length: distance between frames. Defaults to 512
+/// 
+/// ### Returns
+/// yt : Input with leading and trailing silence removed
+/// 
+/// idx : start and end indices of trimmed samples
 pub fn trim(
     y : &Array1<f64>,
     top_db: Option<f64>,
     ref_ : f64,
-    frame_length : Option<i64>,
+    frame_length : Option<i32>,
     hop_length : Option<i32>
 ) -> (Array1<f64>, Array1<i32>)
 {
-    let non_silent : Array1<bool> = signal_to_frame_nonsilent(y, frame_length, hop_length, top_db.unwrap_or(60.), ref_);
+    let non_silent : Array1<bool> = signal_to_frame_nonsilent(y, frame_length, hop_length, top_db.unwrap_or(60.), Some(ref_));
 
     let nonzero : Array1<usize> = Array1::from(non_silent.iter()
         .enumerate()
@@ -21,25 +40,41 @@ pub fn trim(
     } else {
         0
     };
-    let end: i32 = if nonzero.len() > 0 {
-        (*nonzero.last().unwrap() as i32 + 1).min(y.len() as i32 -1)
-    } else {
-        0
+
+    let end : i32 = match nonzero.len() {
+        x if x == non_silent.len()  => x as i32 - 1,
+        x if x <= 0                 => 0,
+        _ => (*nonzero.last().unwrap() as i32 + 1).min(y.len() as i32 - 1)
     };
 
     (y.slice(s![start..end]).to_owned(), Array1::from(array![start, end]))
 }
 
-
+/// Split input into intervals separated by silent frames
+/// 
+/// ### Arguments
+/// y : Input samples
+/// 
+/// top_db : Threshold in decibels, below which is considered silence
+/// 
+/// ref_ : Reference amplitude. If None, uses max function to get reference
+/// 
+/// frame_length : size of each frame. Defaults to 2048
+/// 
+/// hop_length: distance between frames. Defaults to 512
+/// 
+/// ### Returns
+/// indices : Array of size (m, 2). Each row contains the start and 
+/// stop index of a new interval
 pub fn split(
     y : &Array1<f64>,
     top_db: Option<f64>,
     ref_ : f64,
-    frame_length : Option<i64>,
+    frame_length : Option<i32>,
     hop_length : Option<i32>
-) -> Array2<i32> {
+) -> Array2<usize> {
 
-    let non_silent : Array1<bool> = signal_to_frame_nonsilent(y, frame_length, hop_length, top_db.unwrap_or(60.), ref_);
+    let non_silent : Array1<bool> = signal_to_frame_nonsilent(y, frame_length, hop_length, top_db.unwrap_or(60.), Some(ref_));
 
     // Get all indices where frames change between silent and non-silent
     let mut edges : Array1<usize> = non_silent
@@ -77,17 +112,30 @@ pub fn split(
     samples 
         .into_shape((len / 2, 2))
         .unwrap()
+        .mapv(|x| x as usize)
 }
 
 
+/// Rearrange input samples using the given intervals
+/// 
+/// ### Arguments
+/// y : Input samples
+/// 
+/// intervals : Start and stop points of each interval, in the order they'll be used
+/// 
+/// align_zeros : CURRENTLY UNUSED
+/// 
+/// ### Returns
+/// y_remix : y remixed in the order specified by intervals
 pub fn remix(
-    y : Array1<f64>,
-    intervals: Array2<usize>,
+    y : &Array1<f64>,
+    intervals: &Array2<usize>,
     align_zeros : Option<bool>
 ) -> Array1<f64>{
 
     let mut out : Vec<f64> = Vec::new();
 
+    // Not currently implemented
     let zeros : Vec<usize> = if align_zeros.unwrap_or(true) {
         let y_d: ArrayD<f32> = y.mapv(|x| x as f32).into_dyn(); // convert y to right format
         let crossings : Array1<bool>  = zero_crossing(&y_d, 1e-10, None, true, true, 0)
@@ -118,7 +166,19 @@ pub fn remix(
     Array1::from(out)
 }
 
-
+/// Pre-emphasize an audio signal with a first order differencing filter
+/// 
+/// ### Arguments
+/// y : input signal
+/// 
+/// coef : pre-emphasis coefficient. Usually between 0-1
+/// 
+/// zi_in : Initial filter state. If not provided, defaults to 2*y[0] - y[1]
+/// 
+/// ### Returns
+/// y_out : pre-emphasized signal
+/// 
+/// return_zf : Final filter state
 pub fn preemphasis(
     y : &Array1<f64>,
     coef : Option<f64>,
@@ -140,7 +200,19 @@ pub fn preemphasis(
     (out, zf)
 }
 
-
+/// De-emphasize an audio signal, inverse of preemphasis function
+/// 
+/// ### Arguments
+/// y : input signal
+/// 
+/// coef : pre-emphasis coefficient. Usually between 0-1
+/// 
+/// zi_in : Initial filter state. If not provided, defaults to 2*y[0] - y[1]
+/// 
+/// ### Returns
+/// y_out : de-emphasized signal
+/// 
+/// return_zf : Final filter state
 pub fn deemphasis(
     y : &Array1<f64>,
     coef : Option<f64>,
@@ -166,30 +238,135 @@ pub fn deemphasis(
 
 fn signal_to_frame_nonsilent(
     y : &Array1<f64>,
-    frame_length : Option<i64>,
+    frame_length : Option<i32>,
     hop_length : Option<i32>,
     top_db : f64,
-    ref_ : f64
+    reference : Option<f64>
 ) -> Array1<bool>
 {
-    let mse : Array2<f64> = Array2::<f64>::zeros((frame_length.unwrap_or(2048) as usize,1000));
-    // let mse = rms(y = y, frame_length = frame_length, hop_length = hop_length);
+    let mse : Array1<f64> = rms(y, frame_length, hop_length, true);
+    let amin = 1e-10;
 
-    let slice = mse.as_slice().expect("Array must be contiguous");
-    let result = amplitude_to_db(slice, ref_, 1e-5, Some(top_db));
+    let ref_ : f64 = match reference {
+        Some(v) => v,
+        None => mse.iter().cloned().fold(f64::NEG_INFINITY, f64::max) // Computes max
+    }
+        .max(amin);
 
-    let db : Array2<f64> = Array2::from_shape_vec(mse.raw_dim(), result).unwrap();
 
-    let db_reduced: Array1<f64> = db.map_axis(Axis(0), 
-    |col| {col.mean().unwrap()});
-
-    db_reduced.mapv(|x| x > -top_db)
+    let slice : &[f64] = mse.as_slice().unwrap();
+    let db = amplitude_to_db(slice, ref_, amin, Some(top_db));
+    Array1::<f64>::from(db).mapv(|x| x > -top_db)
 }
 
 #[cfg(test)]
 mod tests {
+    use std::array;
+
     use crate::effects::*;
-    use ndarray::{array};
+    use ndarray::{Array1, Array2, array};
+
+    // Trim
+    #[test]
+    fn test_trim_simple() {
+        let y : Array1<f64> = array![0.0, 0.1, 0.5, 0.9, 0.0];
+        let (yt, i) = trim(&y, Some(40.), 1., Some(2), Some(1));
+
+        assert!(i[0] < i[1], "Ending trim has earlier index than start");
+        assert!(yt[0] != 0.0, "Leading silence after trim");
+        assert!(yt[yt.len() - 1] != 0.0, "Trailing silence after trim");
+    }
+
+    #[test]
+    fn test_trim_no_silence() {
+        let y : Array1<f64> = array![0.2, 0.3, 0.4, 0.5];
+        let (yt, i) = trim(&y, Some(40.), 0.1, Some(2), Some(1));
+
+        assert_eq!(i[0], 0, "Start trim does not end at 0");
+        assert_eq!(i[1], y.len() as i32, " end trim does not start at end of input");
+
+        assert_eq!(y[0], yt[0], "first index does not match");
+        assert_eq!(y[1], yt[1], "second index does not match");
+        assert_eq!(y[2], yt[2], "third index does not match");
+        assert_eq!(y[3], yt[3], "fourth index does not match");
+    }
+
+    #[test]
+    fn test_trim_all_silence() {
+        let y: Array1<f64> = array![0.0,0.0,0.0,0.0];
+        let (yt, i) = trim(&y, Some(40.), 1.0, Some(2), Some(1));
+
+        assert_eq!(0, yt.len(), "Did not return empty array");
+        assert_eq!(0, i[0], "Start trim not at 0");
+        assert_eq!(0, i[1] as usize, "End trim not at 0");
+    }
+
+    // Split
+    #[test]
+    fn test_split_basic() {
+        let y : Array1<f64> = array![0.0, 0.0, 0.5, 0.6, 0.0, 0.0, 0.1, 0.2];
+        let intervals : Array2<usize> = split(&y, Some(40.), 1.0, Some(2), Some(1));
+
+        assert_eq!(2, intervals[[0,0]]);
+        assert_eq!(5, intervals[[0,1]]);
+        assert_eq!(6, intervals[[1,0]]);
+        assert_eq!(8, intervals[[1,1]]);
+    }
+
+    #[test]
+    fn test_split_no_silence() {
+        let y : Array1<f64> = array![0.1,0.2,0.3,0.4,0.5];
+        let intervals : Array2<usize> = split(&y, Some(40.), 1.0, Some(2), Some(1));
+
+        assert_eq!(0, intervals[[0,0]]);
+        assert_eq!(y.len(), intervals[[0,1]]);
+    }
+
+    #[test]
+    fn test_split_all_silence() {
+        let y : Array1<f64> = array![0.0,0.0,0.0,0.0,0.0];
+        let intervals : Array2<usize> = split(&y, Some(40.), 1.0, Some(2), Some(1));
+
+        assert_eq!(0, intervals.len());
+    }
+
+    // Remix
+    #[test]
+    fn test_remix_single_interval() {
+        let y : Array1<f64> = array![0.1, 0.2, 0.3, 0.4];
+        let intervals : Array2<usize> = array![[1,3]];
+
+        let output = remix(&y, &intervals, None);
+
+        assert_eq!(0.2, output[0]);
+        assert_eq!(0.3, output[1]);
+    }
+
+    #[test]
+    fn test_remix_multiple_intervals() {
+        let y : Array1<f64> = array![0.1, 0.2, 0.3, 0.4, 0.5];
+        let intervals: Array2<usize> = array![[0, 2], [3, 5]];
+
+        let output = remix(&y, &intervals, None);
+
+        assert_eq!(0.1, output[0]);
+        assert_eq!(0.2, output[1]);
+        assert_eq!(0.4, output[2]);
+        assert_eq!(0.5, output[3]);
+    }
+
+    #[test]
+    fn test_remix_reorder_intervals() {
+        let y : Array1<f64> = array![0.1, 0.2, 0.3, 0.4, 0.5];
+        let intervals: Array2<usize> = array![[3,5], [0,2]];
+
+        let output = remix(&y, &intervals, None);
+
+        assert_eq!(0.4, output[0]);
+        assert_eq!(0.5, output[1]);
+        assert_eq!(0.1, output[2]);
+        assert_eq!(0.2, output[3]);
+    }
 
     // Preemphasis
     #[test]

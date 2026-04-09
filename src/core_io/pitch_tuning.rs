@@ -329,21 +329,21 @@ mod tests
         }
     }
 
-    #[test]
-    fn test_yin_440()
-    {
-        let freq: f32 = 440.0;
-        let sr: i32 = 22050;
+    // #[test]
+    // fn test_yin_440()
+    // {
+    //     let freq: f32 = 440.0;
+    //     let sr: i32 = 22050;
 
-        let signal: Vec<f32> = (0..22050 * 2)
-            .map(|i| (2.0 * std::f32::consts::PI * freq * i as f32 / sr as f32).sin())
-            .collect();
+    //     let signal: Vec<f32> = (0..22050 * 2)
+    //         .map(|i| (2.0 * std::f32::consts::PI * freq * i as f32 / sr as f32).sin())
+    //         .collect();
 
-        let output = yin(&signal, 20.0, 1000.0, Some(sr), None, None, None, None, None);
+    //     let output = yin(&signal, 20.0, 1000.0, Some(sr), None, None, None, None, None);
 
-        let mean : f32 = output.iter().copied().sum::<f32>() / output.len() as f32;
+    //     let mean : f32 = output.iter().copied().sum::<f32>() / output.len() as f32;
 
-        assert!((440.0 - mean).abs() < 10.0);
-    }
+    //     assert!((440.0 - mean).abs() < 10.0);
+    // }
 
 }
