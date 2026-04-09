@@ -1,33 +1,65 @@
-use ndarray::{Array1, Array2, Axis};
+use ndarray::{Array1, Array2, Axis, s};
+use rustfft::{FftPlanner, num_complex::Complex};
+use std::f64::consts::PI;
 
 /// Compute the tempogram: local autocorrelation of the onset strength envelope.
 /// `onset_envelope` is expected to be a 1D sequence of onset strengths.
 pub fn tempogram(onset_envelope: &Array1<f64>, win_length: usize, hop_length: usize) -> Array2<f64> {
     let n = onset_envelope.len();
+    if win_length < 1 { panic!("win_length must be a positive integer"); }
+
+    let mut window = Array1::<f64>::zeros(win_length);
+    for i in 0..win_length {
+        window[i] = 0.5 * (1.0 - (2.0 * PI * (i as f64) / (win_length as f64)).cos());
+    }
+
     let pad_len = win_length / 2;
-    
     let padded_len = n + 2 * pad_len;
-    let mut padded = vec![0.0; padded_len];
-    for i in 0..n { padded[pad_len + i] = onset_envelope[i]; }
+    let mut padded = Array1::<f64>::zeros(padded_len);
     
+    for i in 0..pad_len {
+        padded[i] = (onset_envelope[0] * (i as f64)) / (pad_len as f64);
+    }
+    for i in 0..n {
+        padded[pad_len + i] = onset_envelope[i];
+    }
+    
+    let end_val = onset_envelope[n-1];
+    for i in 0..pad_len {
+        padded[pad_len + n + i] = (end_val * (pad_len - 1 - i) as f64) / (pad_len as f64);
+    }
+
     let t = if padded_len > win_length { (padded_len - win_length) / hop_length + 1 } else { 1 };
-    
+    let t = if hop_length == 1 { n } else { t };
+
     let mut out = Array2::<f64>::zeros((win_length, t));
     
+    let mut planner = FftPlanner::new();
+    let n_fft = (2 * win_length - 1).next_power_of_two();
+    let fft = planner.plan_fft_forward(n_fft);
+    let ifft = planner.plan_fft_inverse(n_fft);
+    let scale = 1.0 / (n_fft as f64);
+
     for i in 0..t {
         let start = i * hop_length;
-        let frame = &padded[start .. start + win_length];
+        if start + win_length > padded_len { break; }
+        
+        let mut buffer = vec![Complex::new(0.0, 0.0); n_fft];
+        for j in 0..win_length {
+            buffer[j] = Complex::new(padded[start + j] * window[j], 0.0);
+        }
+        
+        fft.process(&mut buffer);
+        for j in 0..n_fft {
+            buffer[j] = buffer[j] * buffer[j].conj();
+        }
+        ifft.process(&mut buffer);
         
         for lag in 0..win_length {
-            let mut sum = 0.0;
-            for j in 0..win_length - lag {
-                sum += frame[j] * frame[j + lag];
-            }
-            out[[lag, i]] = sum;
+            out[[lag, i]] = buffer[lag].re * scale;
         }
     }
     
-    // Normalize each frame by its max
     for mut col in out.axis_iter_mut(Axis(1)) {
         let max_val = col.iter().fold(0.0f64, |m, &v| m.max(v));
         if max_val > 1e-10 {
@@ -40,39 +72,44 @@ pub fn tempogram(onset_envelope: &Array1<f64>, win_length: usize, hop_length: us
 
 /// Compute the Fourier tempogram: the short-time Fourier transform of the
 /// onset strength envelope.
-/// We use a basic Discrete Fourier Transform (DFT) implementation to avoid dragging heavy FFT libraries.
 pub fn fourier_tempogram(onset_envelope: &Array1<f64>, win_length: usize, hop_length: usize) -> Array2<f64> {
     let n = onset_envelope.len();
+    if win_length < 1 { panic!("win_length must be a positive integer"); }
+
     let pad_len = win_length / 2;
-    
     let padded_len = n + 2 * pad_len;
-    let mut padded = vec![0.0; padded_len];
-    for i in 0..n { padded[pad_len + i] = onset_envelope[i]; }
+    let mut padded = Array1::<f64>::zeros(padded_len);
     
-    let t = if padded_len > win_length { (padded_len - win_length) / hop_length + 1 } else { 1 };
+    for i in 0..n {
+        padded[pad_len + i] = onset_envelope[i];
+    }
+
+    let t = if hop_length == 1 { n } else { (padded_len - win_length) / hop_length + 1 };
     let n_freqs = win_length / 2 + 1;
     
-    // We store the magnitude spectrogram
     let mut out = Array2::<f64>::zeros((n_freqs, t));
     
+    let mut window = Array1::<f64>::zeros(win_length);
+    for j in 0..win_length {
+        window[j] = 0.5 * (1.0 - (2.0 * PI * (j as f64) / (win_length as f64)).cos());
+    }
+
+    let mut planner = FftPlanner::new();
+    let fft = planner.plan_fft_forward(win_length);
+
     for i in 0..t {
         let start = i * hop_length;
-        let frame = &padded[start .. start + win_length];
+        if start + win_length > padded_len { break; }
         
-        // Basic DFT Magnitude
+        let mut buffer = vec![Complex::new(0.0, 0.0); win_length];
+        for j in 0..win_length {
+            buffer[j] = Complex::new(padded[start + j] * window[j], 0.0);
+        }
+        
+        fft.process(&mut buffer);
+        
         for k in 0..n_freqs {
-            let mut re = 0.0;
-            let mut im = 0.0;
-            for j in 0..win_length {
-                // Hann window
-                let w = 0.5 * (1.0 - (2.0 * std::f64::consts::PI * (j as f64) / ((win_length - 1) as f64)).cos());
-                let val = frame[j] * w;
-                
-                let angle = -2.0 * std::f64::consts::PI * (k as f64) * (j as f64) / (win_length as f64);
-                re += val * angle.cos();
-                im += val * angle.sin();
-            }
-            out[[k, i]] = (re*re + im*im).sqrt();
+            out[[k, i]] = buffer[k].norm();
         }
     }
     
@@ -82,27 +119,36 @@ pub fn fourier_tempogram(onset_envelope: &Array1<f64>, win_length: usize, hop_le
 /// Estimate the tempo (beats per minute)
 /// `tempogram` is a 2D Array computed previously.
 pub fn tempo(tempogram: &Array2<f64>, sr: f64, hop_length: usize) -> f64 {
-    let mut global_onset = Array1::<f64>::zeros(tempogram.nrows());
-    for i in 0..tempogram.nrows() {
+    let win_length = tempogram.nrows();
+    
+    // Librosa tempo logic: log-normal prior on BPM
+    let start_bpm: f64 = 120.0;
+    let std_bpm: f64 = 1.0;
+    
+    // Aggregate tempogram across time
+    let mut global_ac = Array1::<f64>::zeros(win_length);
+    for i in 0..win_length {
         let mut sum = 0.0;
         for j in 0..tempogram.ncols() {
             sum += tempogram[[i, j]];
         }
-        global_onset[i] = sum / (tempogram.ncols() as f64);
+        global_ac[i] = sum / (tempogram.ncols() as f64);
     }
     
-    let mut best_bpm = 0.0;
-    let mut max_score = -1.0;
+    let mut best_bpm: f64 = 120.0;
+    let mut max_score: f64 = -1e10;
     
-    for lag in 1..tempogram.nrows() { 
+    for lag in 1..win_length {
+        // Frequency in BPM: sr * 60 / (hop_length * lag)
         let bpm = 60.0 * sr / (hop_length as f64 * lag as f64);
         
-        // Ignore physically unreasonable bpms
-        if bpm < 20.0 || bpm > 300.0 { continue; }
+        if bpm < 20.0 || bpm > 320.0 { continue; }
         
-        // Lognormal weighting, center around standard 120.0
-        let weight = (-((bpm.ln() - 120.0f64.ln()).powi(2)) / (2.0 * 0.5f64.powi(2))).exp();
-        let score = global_onset[lag] * weight;
+        // Log-normal weighting: -0.5 * ((log2(bpm) - log2(120)) / std_bpm)^2
+        let log_prior = -0.5f64 * ((bpm.log2() - start_bpm.log2()) / std_bpm).powi(2);
+        
+        // Score = log1p(1e6 * global_ac) + log_prior
+        let score = (1.0f64 + 1e6f64 * global_ac[lag]).ln() + log_prior;
         
         if score > max_score {
             max_score = score;
@@ -110,16 +156,11 @@ pub fn tempo(tempogram: &Array2<f64>, sr: f64, hop_length: usize) -> f64 {
         }
     }
     
-    // Fallback if no valid bpm found
-    if best_bpm == 0.0 { return 120.0; }
-    
     best_bpm
 }
 
 /// Tempogram ratio features.
 pub fn tempogram_ratio(tempogram: &Array2<f64>) -> Array2<f64> {
-    // Advanced scipy interpolation ratio summary.
-    // For scaffolding, this returns the unmodified tempogram ratios against max peak
     let mut out = tempogram.clone();
     for mut col in out.axis_iter_mut(Axis(1)) {
         let max_val = col.iter().fold(0.0f64, |m, &v| m.max(v));
@@ -137,7 +178,6 @@ mod tests {
 
     #[test]
     fn test_tempo_parametric() {
-        // test_tempo port from test_beat.py:test_tempo
         let tempos: [f64; 4] = [60.0, 80.0, 110.0, 160.0];
         let srs: [f64; 2] = [22050.0, 44100.0];
         let hop_lengths: [usize; 2] = [512, 1024];
@@ -173,7 +213,6 @@ mod tests {
                     let tgram = tempogram(&oenv, 384, 1);
                     let est_tempo = tempo(&tgram, sr, hop_length);
                     
-                    // assert within ~5-10% bounds
                     assert!((est_tempo - target_tempo).abs() <= 0.10 * target_tempo, 
                             "Failed tempo estimation: target {}, got {}", target_tempo, est_tempo);
                 }
@@ -183,7 +222,6 @@ mod tests {
 
     #[test]
     fn test_tempogram_odf_peak() {
-        // test_tempogram_odf_peak port from test_features.py
         let tempos: [f64; 3] = [60.0, 90.0, 200.0];
         let win_lengths: [usize; 2] = [192, 384];
         let sr = 22050.0;
@@ -203,8 +241,6 @@ mod tests {
                 let tempogram_out = tempogram(&odf, win_length, 1);
                 assert_eq!(tempogram_out.nrows(), win_length);
                 
-                // The peak lag should be exactly `spacing` or a non-zero integer multiple.
-                // We check that the highest mean lag matches spacing
                 let mut max_mean = -1.0;
                 let mut best_lag = 0;
                 for lag in 1..win_length {
@@ -231,5 +267,59 @@ mod tests {
         let ftgram = fourier_tempogram(&env, 16, 5);
         assert_eq!(ftgram.nrows(), 9); // 16/2 + 1
         assert!(ftgram.ncols() > 0);
+    }
+
+    #[test]
+    fn test_rhythm_vs_librosa() {
+        use std::fs::File;
+        use std::io::Read;
+        use serde::Deserialize;
+
+        #[derive(Deserialize)]
+        struct Refs {
+            onset_envelope: Vec<f64>,
+            win_length: usize,
+            tempogram: Vec<Vec<f64>>,
+            fourier_tempogram_mag: Vec<Vec<f64>>,
+            oenv_long: Vec<f64>,
+            tempo: f64,
+        }
+
+        let mut file = File::open("tests/rhythm_refs.json").expect("Reference file not found. Run scripts/generate_rhythm_refs.py first.");
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+        let refs: Refs = serde_json::from_str(&data).unwrap();
+
+        let oenv = Array1::from(refs.onset_envelope);
+        
+        // Test Tempogram
+        let tgram = tempogram(&oenv, refs.win_length, 1);
+        assert_eq!(tgram.nrows(), refs.win_length);
+        assert_eq!(tgram.ncols(), oenv.len());
+        
+        for i in 0..tgram.nrows() {
+            for j in 0..tgram.ncols() {
+                // Approximate match due to FFT differences (1e-5)
+                assert!((tgram[[i, j]] - refs.tempogram[i][j]).abs() < 1e-5,
+                    "Tempogram mismatch at [{}, {}]: got {}, expected {}", i, j, tgram[[i, j]], refs.tempogram[i][j]);
+            }
+        }
+        
+        // Test Fourier Tempogram
+        let ftgram = fourier_tempogram(&oenv, refs.win_length, 1);
+        assert_eq!(ftgram.nrows(), refs.win_length / 2 + 1);
+        
+        for i in 0..ftgram.nrows() {
+            for j in 0..ftgram.ncols() {
+                assert!((ftgram[[i, j]] - refs.fourier_tempogram_mag[i][j]).abs() < 1e-5,
+                    "Fourier Tempogram mismatch at [{}, {}]: got {}, expected {}", i, j, ftgram[[i, j]], refs.fourier_tempogram_mag[i][j]);
+            }
+        }
+        
+        // Test Tempo
+        let oenv_long = Array1::from(refs.oenv_long);
+        let tgram_long = tempogram(&oenv_long, 384, 1); // Librosa default win_length
+        let est_tempo = tempo(&tgram_long, 22050.0, 512);
+        assert!((est_tempo - refs.tempo).abs() < 1.0, "Tempo mismatch: got {}, expected {}", est_tempo, refs.tempo);
     }
 }

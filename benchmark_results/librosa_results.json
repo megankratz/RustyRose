@@ -1,0 +1,25 @@
+{
+    "spectral_features": {
+        "tonnetz/10": 44509.060026030056,
+        "tonnetz/100": 43889.09997942392,
+        "tonnetz/1000": 84568.79986624699,
+        "poly_features/10": 63499.680036329664,
+        "poly_features/100": 105293.66001719609,
+        "poly_features/1000": 1247732.1000915254
+    },
+    "time_domain": {
+        "autocorrelate": 37760.59500160045,
+        "lpc": 53310.879000491695,
+        "zero_crossing": 4900.2029991243035,
+        "mu_compress": 24029.606000112835
+    },
+    "spectral_scaling": {
+        "power_to_db": 6239.15100004524,
+        "rms": 26627.872997778468
+    },
+    "utils_effects": {
+        "time_to_samples": 2616.3010006712284,
+        "preemphasis": 152351.74299959908,
+        "trim": 51550.979987950996
+    }
+}
