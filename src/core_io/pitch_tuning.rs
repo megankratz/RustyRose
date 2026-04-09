@@ -217,16 +217,74 @@ pub fn pitch_tuning(
 
 
 pub fn piptrack(
-    y : &Array1<f64>, 
+    y : &Array1<f32>, 
     sr : Option<i32>, 
     n_fft : Option<i32>, 
     hop_length : Option<i32>,
-    threshold : f32,
-    fmin : f32,
-    fmax : f32,
+    threshold : Option<f32>,
+    fmin : Option<f32>,
+    fmax : Option<f32>,
     win_length : Option<i32>
-) -> Array2<f64> {
-    array![[],[]]
+) -> (Array2<f32>, Array2<f32>) {
+    (array![[],[]], array![[],[]])
+}
+
+/// Estimate the tuning offset relative to A=440hz
+/// 
+/// ### Parameters
+/// y : Input audio samples
+/// 
+/// sr : sample rate. Defaults to 22050
+/// 
+/// n_fft : number of fft bins to use. Defaults to 2048
+/// 
+/// resolution : Resolution of tuning, to a fraction of a bin. Defaults to 0.01
+/// 
+/// bins_per_octave : Number of frequency bins per octave. Defaults to 12
+/// 
+/// ### Returns
+/// tuning: float in range [-0.5, 0.5]
+pub fn estimate_tuning(
+    y : &Array1<f32>,
+    sr : Option<i32>,
+    n_fft : Option<i32>,
+    resolution : Option<f32>,
+    bins_per_octave : Option<u32>
+) -> f32 {
+
+
+    let (pitch, mag) = piptrack(y, sr, n_fft, None, None, None, None, None);
+
+    let pitch_mask : Array1<bool> = pitch.iter()
+        .map(|&p| p > 0.0).collect();
+
+    let threshold : f32 = if pitch_mask.iter().any(|&x| x) {
+        let mut masked : Vec<f32> = mag.iter()
+        .zip(pitch_mask.iter())
+        .filter_map(|(&v, &mask)| if mask {Some(v)} else {None})
+        .collect();
+
+        let mid = masked.len() / 2;
+        masked.select_nth_unstable_by(mid, |a, b| a.partial_cmp(b).unwrap());
+        if mid % 2 == 1 {
+            masked[mid]
+        } else {
+            masked.select_nth_unstable_by(mid-1, |a, b| a.partial_cmp(b).unwrap());
+            (masked[mid] + masked[mid+1]) / 2.0
+        }
+        } else {
+            0.0
+        };
+
+    let filtered_pitches : Array1<f32> = pitch.iter()
+        .zip(mag.iter())
+        .zip(pitch_mask.iter())
+        .filter_map(|((&p, &m), &mask)| {
+            if mask && m >= threshold {Some(p)} else {None}
+        })
+        .collect();
+
+    pitch_tuning(&filtered_pitches, resolution, bins_per_octave)
 }
 
 
