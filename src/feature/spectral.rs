@@ -1,4 +1,6 @@
-use ndarray::{Array1, Array2, Axis, s};
+use ndarray::{Array1, Array2, Axis, s, array};
+
+use crate::utilities::frame;
 
 // --- STUBS for Spectral Features ---
 pub fn chroma_stft() { unimplemented!() }
@@ -7,7 +9,7 @@ pub fn chroma_cens() { unimplemented!() }
 pub fn chroma_vqt() { unimplemented!() }
 pub fn melspectrogram() { unimplemented!() }
 pub fn mfcc() { unimplemented!() }
-pub fn rms() { unimplemented!() }
+// pub fn rms() { unimplemented!() }
 pub fn spectral_centroid() { unimplemented!() }
 pub fn spectral_bandwidth() { unimplemented!() }
 pub fn spectral_contrast() { unimplemented!() }
@@ -153,6 +155,53 @@ fn invert_matrix(m: &Array2<f64>) -> Result<Array2<f64>, String> {
     }
     Ok(inv)
 }
+
+
+pub fn rms(
+    y : &Array1<f64>,
+    frame_length : Option<i32>,
+    hop_length : Option<i32>,
+    center : bool
+) -> Array1<f64> {
+
+    let f_len = frame_length.unwrap_or(2048) as usize;
+    let h_len = hop_length.unwrap_or(512) as usize;
+
+    let y_padded : Array1<f64> = if center {
+        let pad : usize = f_len / 2;
+        let mut padded = Array1::<f64>::zeros(y.len() + f_len);
+        for i in 0..y.len() {
+            padded[pad+i] = y[i];
+        }
+        padded
+    } else {
+        y.clone()
+    };
+
+    let n_frames = if y_padded.len() < f_len {
+        0
+    } else {
+        (y_padded.len() - f_len) / h_len as usize + 1
+    };
+
+    let mut rms = Array1::<f64>::zeros(n_frames);
+    for i in 0..n_frames {
+        let start = i * h_len;
+        let end = start + f_len;
+
+        let mut sum : f64 = 0.0;
+        for j in start..end {
+            let v = y_padded[j];
+            sum += v * v;
+        }
+
+        let mean : f64 = sum / f_len as f64;
+        rms[i] = mean.sqrt();
+    }
+
+    rms
+}
+
 
 #[cfg(test)]
 mod tests {

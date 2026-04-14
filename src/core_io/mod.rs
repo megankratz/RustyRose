@@ -28,3 +28,6 @@ pub mod spectrum;
 pub use spectrum::*;
 
 pub use pitch_tuning::*;
+
+pub mod spectral_representations;
+pub use spectral_representations::*;

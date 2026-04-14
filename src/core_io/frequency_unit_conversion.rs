@@ -1,59 +1,20 @@
-//use rusty_rose::core_io;
+// https://librosa.org/doc/latest/core.html#frequency-unit-conversion
 use regex::Regex;
-//use std::{collections::HashMap, string};
 
-// note_to_hz
+// ------------------------------------------------------------------------------
+// NOTE_TO_HZ -> converts a note name to its corresponding frequency in Hz
+// parameters: note: &str - the note name to convert
+// returns: f32 - the frequency in Hz corresponding to the input note
+// --------------------------------------------------------------------------------
 pub fn note_to_hz(note: &str) -> f32 {
     return midi_to_hz(note_to_midi(note, true).unwrap());
 }
 
-// note_to_midi and midi_to_hz are SKETCHY fyi
-// note_to_midi
-// [docs]def note_to_midi(
-//
-//     if not isinstance(note, str):
-//         return np.array([note_to_midi(n, round_midi=round_midi) for n in note])
-//     pitch_map: Dict[str, int] = {
-//         "C": 0,
-//         "D": 2,
-//         "E": 4,
-//         "F": 5,
-//         "G": 7,
-//         "A": 9,
-//         "B": 11,
-//     }
-//     acc_map: Dict[str, int] = {
-//         "#": 1,
-//         "": 0,
-//         "b": -1,
-//         "!": -1,
-//         "♯": 1,
-//         "𝄪": 2,
-//         "♭": -1,
-//         "𝄫": -2,
-//         "♮": 0,
-//     }
-//     match = notation.NOTE_RE.match(note)
-//     if not match:
-//         raise ParameterError(f"Improper note format: {note:s}")
-//     pitch = match.group("note").upper()
-//     offset = np.sum([acc_map[o] for o in match.group("accidental")])
-//     octave = match.group("octave")
-//     cents = match.group("cents")
-//     if not octave:
-//         octave = 0
-//     else:
-//         octave = int(octave)
-//     if not cents:
-//         cents = 0
-//     else:
-//         cents = int(cents) * 1e-2
-//     note_value: float = 12 * (octave + 1) + pitch_map[pitch] + offset + cents
-//     if round_midi:
-//         return int(np.round(note_value))
-//     else:
-//         return note_value
-
+// ------------------------------------------------------------------------------
+// NOTE_TO_MIDI -> converts a note name to its corresponding MIDI note number (SKETCHY STILL MIGHT NEED WORK)
+// parameters: note: &str - the note name to convert
+// returns: f32 - the MIDI note number corresponding to the input note
+// --------------------------------------------------------------------------------
 pub fn note_to_midi(note: &str, round_midi: bool) -> Result<f32, String> {
     let pitch_map = |c: char| -> Option<i32> {
         match c {
@@ -137,30 +98,11 @@ pub fn note_to_midi(note: &str, round_midi: bool) -> Result<f32, String> {
     }
 }
 
-// midi_to_note
-/*
-[docs]@vectorize(excluded=["octave", "cents", "key", "unicode"])
-def midi_to_note(
-
-    if cents and not octave:
-        raise ParameterError("Cannot encode cents without octave information.")
-
-    note_map = notation.key_to_notes(key=key, unicode=unicode)
-
-    # mypy does not understand vectorization, suppress type checks
-    note_num = int(np.round(midi))  # type: ignore
-    note_cents = int(100 * np.around(midi - note_num, 2))  # type: ignore
-
-    note = note_map[note_num % 12]
-
-    if octave:
-        note = "{:s}{:0d}".format(note, int(note_num / 12) - 1)
-    if cents:
-        note = f"{note:s}{note_cents:+02d}"
-
-    return note
-*/
-
+// ------------------------------------------------------------------------------
+// MIDI_TO_NOTE -> converts a MIDI note number to its corresponding note name (SKETCHY STILL MIGHT NEED WORK)
+// parameters: midi: f32 - the MIDI note number to convert
+// returns: String - the note name corresponding to the input MIDI note number
+// --------------------------------------------------------------------------------
 pub fn midi_to_note(midi: f32, octave: bool, cents: bool, key: &str, unicode: bool) -> String {
     if cents && !octave {
         panic!("Cannot encode cents without octave information.");
@@ -188,23 +130,39 @@ pub fn midi_to_note(midi: f32, octave: bool, cents: bool, key: &str, unicode: bo
     return note as String;
 }
 
-// midi_to_hz
+// ------------------------------------------------------------------------------
+// MIDI_TO_HZ -> converts a MIDI note number to its corresponding frequency in Hz
+// parameters: midi: f32 - the MIDI note number to convert
+// returns: f32 - the frequency in Hz corresponding to the input MIDI note number
+// --------------------------------------------------------------------------------
 pub fn midi_to_hz(notes: f32) -> f32 {
     return 440.0 * (2.0_f32.powf((notes - 69.0) / 12.0));
 }
 
-// hz_to_midi
+// ------------------------------------------------------------------------------
+// HZ_TO_MIDI -> converts a frequency in Hz to its corresponding MIDI note number
+// parameters: frequencies: f32 - the frequency in Hz to convert
+// returns: f32 - the MIDI note number corresponding to the input frequency in Hz
+// --------------------------------------------------------------------------------
 pub fn hz_to_midi(frequencies: f32) -> f32 {
     let midi: f32 = 12.0 * (frequencies.log2() - 440.0_f32.log2()) + 69.0;
     return midi;
 }
 
-// hz_to_note
+// ------------------------------------------------------------------------------
+// HZ_TO_NOTE -> converts a frequency in Hz to its corresponding note name
+// parameters: frequencies: f32 - the frequency in Hz to convert
+// returns: String - the note name corresponding to the input frequency in Hz
+// --------------------------------------------------------------------------------
 pub fn hz_to_note(frequencies: f32, octave: bool, cents: bool, key: &str, unicode: bool) -> String {
     return midi_to_note(hz_to_midi(frequencies), octave, cents, key, unicode);
 }
 
-// hz_to_mel
+// ------------------------------------------------------------------------------
+// HZ_TO_MEL -> converts a frequency in Hz to its corresponding Mel scale value
+// parameters: frequencies: f32 - the frequency in Hz to convert
+// returns: f32 - the Mel scale value corresponding to the input frequency in Hz
+// --------------------------------------------------------------------------------
 pub fn hz_to_mel(frequencies: f32, htk: bool) -> f32 {
     if htk {
         return 2595.0 * (1.0 + frequencies / 700.0).log10();
@@ -226,7 +184,11 @@ pub fn hz_to_mel(frequencies: f32, htk: bool) -> f32 {
     return mels;
 }
 
-// mel_to_hz
+// ------------------------------------------------------------------------------
+// MEL_TO_HZ -> converts a Mel scale value to its corresponding frequency in Hz
+// parameters: mels: f32 - the Mel scale value to convert
+// returns: f32 - the frequency in Hz corresponding to the input Mel scale value
+// --------------------------------------------------------------------------------
 pub fn mel_to_hz(mels: f32, htk: bool) -> f32 {
     if htk {
         return 700.0 * (10.0_f32.powf(mels / 2595.0) - 1.0);
@@ -247,26 +209,42 @@ pub fn mel_to_hz(mels: f32, htk: bool) -> f32 {
     return freqs;
 }
 
-// hz_to_octs
+// ------------------------------------------------------------------------------
+// HZ_TO_OCTS -> converts a frequency in Hz to its corresponding value in octaves relative to a reference frequency (default is A4 = 440 Hz)
+// parameters: frequencies: f32 - the frequency in Hz to convert
+// returns: f32 - the value in octaves corresponding to the input frequency in Hz relative to the reference frequency
+// --------------------------------------------------------------------------------
 pub fn hz_to_octs(frequencies: f32, tuning: f32, bins_per_octs: i32) -> f32 {
     let affz = 440.0 * 2.0_f32.powf(tuning / bins_per_octs as f32);
     let octs: f32 = (frequencies / (affz / 16.0)).log2();
     return octs;
 }
 
-// octs_to_hz
+// ------------------------------------------------------------------------------
+// OCTS_TO_HZ -> converts a value in octaves relative to a reference frequency to its corresponding frequency in Hz
+// parameters: octs: f32 - the value in octaves to convert
+// returns: f32 - the frequency in Hz corresponding to the input value in octaves relative to the reference frequency
+// --------------------------------------------------------------------------------
 pub fn octs_to_hz(octs: f32, tuning: f32, bins_per_octave: i32) -> f32 {
     let affz = 440.0 * 2.0_f32.powf(tuning / bins_per_octave as f32);
     return (affz / 16.0) * (2.0_f32.powf(octs));
 }
 
-// a4_to_tuning
+// ------------------------------------------------------------------------------
+// A4_TO_TUNING -> converts a frequency in Hz to its corresponding tuning value in bins relative to A4 = 440 Hz
+// parameters: a4: f32 - the frequency in Hz to convert
+// returns: f32 - the tuning value in bins corresponding to the input frequency in Hz relative to A4 = 440 Hz
+// --------------------------------------------------------------------------------
 pub fn a4_to_tuning(a4: f32, bins_per_octave: i32) -> f32 {
     let tuning: f32 = bins_per_octave as f32 * (a4.log2() - 440.0_f32.log2());
     return tuning;
 }
 
-// tuning_to_a4
+// ------------------------------------------------------------------------------
+// TUNING_TO_A4 -> converts a tuning value in bins relative to A4 = 440 Hz to its corresponding frequency in Hz
+// parameters: tuning: f32 - the tuning value in bins to convert
+// returns: f32 - the frequency in Hz corresponding to the input tuning value in bins relative to A4 = 440 Hz
+// --------------------------------------------------------------------------------
 pub fn tuning_to_a4(tuning: f32, bins_per_octave: i32) -> f32 {
     return 440.0 * 2.0_f32.powf(tuning / bins_per_octave as f32);
 }
